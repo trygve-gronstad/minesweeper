@@ -1,6 +1,10 @@
 import java.util.Arrays;
 import java.util.Comparator;
 
+/*
+Jeg bruker bare den sorterete x arrayen, så jeg kan fjerne sortert Y, da kan jeg også implementere compareble i Punkt og gjøre koden litt lettere
+*/
+
 class Rutenett {
 
     private final Punkt[] sortertX;
@@ -38,8 +42,9 @@ class Rutenett {
     }
 
     public Punkt[] punkterIIntervall(Punkt A, Punkt B) {
-        int xStart = finnIndeks(sortertX, A);
-        int xSlutt = finnIndeks(sortertX, B) + 1; //plusser på 1 for å få inklusiv
+        //adderer/subtraherer 1 for å få inklusiv, tar max/min for å unngå error ved for store verdier
+        int xStart = Math.max(0, finnIndeks(sortertX, A) - 1);
+        int xSlutt = Math.min(sortertX.length, finnIndeks(sortertX, B) + 1);
 
         Punkt[] punkter = Arrays.copyOfRange(sortertX, xStart, xSlutt);
         

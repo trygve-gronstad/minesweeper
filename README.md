@@ -1,0 +1,1 @@
+Prosjekt for å lage minesweeper med ikke-kvadratiske ruter

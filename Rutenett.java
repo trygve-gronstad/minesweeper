@@ -1,5 +1,4 @@
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 /*
 Jeg bruker bare den sorterete x arrayen, så jeg kan fjerne sortert Y, da kan jeg også implementere compareble i Punkt og gjøre koden litt lettere
@@ -26,6 +25,36 @@ class Rutenett {
         this(antall, new RandomModell(bredde, høyde));
     }
 
+    public int maksX() {
+        return sortertX[sortertX.length - 1].x;
+    }
+
+    public int maksY() {
+        return sortertY[sortertY.length - 1].y;
+    }
+
+    private boolean finnTrekanter(List<Trekant> alle, Trekant t) {
+        Punkt[] punkter = punkterIIntervall(t.sørVestHjørne(), t.nordØstHjørne());
+        for (Punkt p: punkter) {
+            if (!t.erIHjørne(p) && t.innenforSirkel(p)) {
+                Trekant[] nye = t.newTrekant(p);
+                for (Trekant nyT: nye) {
+                    if (finnTrekanter(alle, nyT)) {
+                        alle.add(nyT);
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public List<Trekant> finnTrekanter() {
+        List<Trekant> trekanter = new ArrayList<>();
+        finnTrekanter(trekanter, new Trekant(new Punkt(-maksX(), -1), new Punkt(2*maksX(), -1), new Punkt(maksX()/2, 2*maksY())));
+        return trekanter;
+    }
+
     private Punkt[] finnPunkter(int antall, PunktDistribusjon modell) {
         Punkt[] punkter = new Punkt[antall];
 
@@ -41,6 +70,11 @@ class Rutenett {
         return String.format("x: %s, y: %s", Arrays.toString(sortertX), Arrays.toString(sortertY));
     }
 
+    /*
+    må kanskje gjøre om denne metoden, men det fungerer ok for nå
+    feks, så må for øyeblikket A alltid være det minste, og dereter B
+    og sikkert bedre måter å gjøre det min/max / +-1 på
+    */
     public Punkt[] punkterIIntervall(Punkt A, Punkt B) {
         //adderer/subtraherer 1 for å få inklusiv, tar max/min for å unngå error ved for store verdier
         int xStart = Math.max(0, finnIndeks(sortertX, A) - 1);

@@ -21,5 +21,8 @@ class Punkt {
         return new Punkt(x + i, y + i);
     }
 
+    public int sign(Punkt A, Punkt B) {
+        return (x - B.x) * (A.y - B.y) - (A.x - B.x) * (y - B.y);
+    }
 
 }

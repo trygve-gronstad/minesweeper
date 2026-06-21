@@ -36,7 +36,7 @@ class Rutenett {
     private boolean finnTrekanter(List<Trekant> alle, Trekant t) {
         Punkt[] punkter = punkterIIntervall(t.sørVestHjørne(), t.nordØstHjørne());
         for (Punkt p: punkter) {
-            if (!t.erIHjørne(p) && t.innenforSirkel(p)) {
+            if (!t.erIHjørne(p) && t.innenforTrekant(p)) {
                 Trekant[] nye = t.newTrekant(p);
                 for (Trekant nyT: nye) {
                     if (finnTrekanter(alle, nyT)) {

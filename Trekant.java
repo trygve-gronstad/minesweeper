@@ -71,6 +71,14 @@ class Trekant {
         return pow2(p.x - S.x) + pow2(p.y - S.y) <= r2;
     }
 
+    public boolean innenforTrekant(Punkt p) {
+        int d1 = p.sign(A, B);
+        int d2 = p.sign(B, C);
+        int d3 = p.sign(C, A);
+
+        return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+    } 
+
     private static int pow2(int tall) {
         return tall*tall;
     }

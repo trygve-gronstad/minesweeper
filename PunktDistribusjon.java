@@ -20,3 +20,26 @@ class RandomModell implements PunktDistribusjon {
         return new Punkt(RAND.nextInt(BREDDE), RAND.nextInt(HØYDE));
     }
 }
+
+class GridModell implements PunktDistribusjon {
+
+    private final int BREDDE, PER_RAD, DELTA;
+    private int x, y;
+
+    public GridModell(int bredde, int perRad) {
+        BREDDE = bredde;
+        PER_RAD = perRad;
+        x = y = 0;
+        DELTA = BREDDE / PER_RAD;
+    }
+
+    @Override
+    public Punkt neste() {
+        if (x > PER_RAD) {
+            x = 0;
+            y++;
+        }
+
+        return new Punkt(DELTA * x++, DELTA * y);
+    }
+}

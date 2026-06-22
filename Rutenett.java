@@ -1,5 +1,4 @@
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 class Rutenett {
 
@@ -37,9 +36,14 @@ class Rutenett {
         return String.format("x: %s, y: %s", Arrays.toString(sortertX), Arrays.toString(sortertY));
     }
 
+    public Punkt[] hentPunkter() {
+        return sortertX;
+    }
+
+    /*
     public Punkt[] punkterIIntervall(Punkt A, Punkt B) {
-        int xStart = finnIndeks(sortertX, A);
-        int xSlutt = finnIndeks(sortertX, B) + 1; //plusser på 1 for å få inklusiv
+        int xStart = Math.max(0, finnIndeks(sortertX, A) - 1);
+        int xSlutt = Math.min(sortertX.length, finnIndeks(sortertX, B) + 1); //plusser på 1 for å få inklusiv
 
         Punkt[] punkter = Arrays.copyOfRange(sortertX, xStart, xSlutt);
         
@@ -60,7 +64,34 @@ class Rutenett {
         }
         return i;
     }
+    */
 
+}
+
+class Fuksjon {
+    private final Punkt FOKUS;
+    private int start, slutt;
+
+    public Fuksjon(Punkt p) {
+        FOKUS = p;
+    }
+
+    public int y(int x, int c) {
+        return (c*c - x*x + 2*x*FOKUS.x- FOKUS.x*FOKUS.x - FOKUS.y*FOKUS.y)/(2 * (c-FOKUS.y));
+    }
+}
+
+class FuksjonsSamling {
+    private List<Fuksjon> fuksjoner;
+    private int c = 0;
+
+    public void leggTil(Punkt p) {
+        fuksjoner.add(new Fuksjon(p));
+    }
+
+    public void økC() {
+        c++;
+    } 
 }
 
 

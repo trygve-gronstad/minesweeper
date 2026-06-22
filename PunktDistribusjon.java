@@ -27,17 +27,15 @@ class RandomModell implements PunktDistribusjon {
 
 class GridModell implements PunktDistribusjon {
 
-    private final int PER_RAD;
-    private final int BREDDE;
+
+    private final int BREDDE, PER_RAD, DELTA;
     private int x, y;
-    private final int dx;
 
     public GridModell(int bredde, int perRad) {
         BREDDE = bredde;
         PER_RAD = perRad;
         x = y = 0;
-        dx = (int) BREDDE / PER_RAD;
-
+        DELTA = BREDDE / PER_RAD;
     }
 
     @Override
@@ -46,8 +44,6 @@ class GridModell implements PunktDistribusjon {
             x = 0;
             y++;
         }
-        x++;
-                
-        return new Punkt(x * dx, y * dx);
+        return new Punkt(DELTA * x++, DELTA * y);
     }
 }

@@ -16,7 +16,7 @@ class Rutenett {
         sortertX = Arrays.copyOf(p, p.length);
         sortertY = p;
 
-        Arrays.sort(sortertX, Comparator.comparingInt(punkt -> punkt.x));
+        Arrays.sort(sortertX);
         Arrays.sort(sortertY, Comparator.comparingInt(punkt -> punkt.y));
 
     }
@@ -36,7 +36,7 @@ class Rutenett {
     private boolean finnTrekanter(List<Trekant> alle, Trekant t) {
         Punkt[] punkter = punkterIIntervall(t.sørVestHjørne(), t.nordØstHjørne());
         for (Punkt p: punkter) {
-            if (!t.erIHjørne(p) && t.innenforTrekant(p)) {
+            if (!t.erIKant(p) && t.innenforTrekant(p)) {
                 Trekant[] nye = t.newTrekant(p);
                 for (Trekant nyT: nye) {
                     if (finnTrekanter(alle, nyT)) {
@@ -70,15 +70,21 @@ class Rutenett {
         return String.format("x: %s, y: %s", Arrays.toString(sortertX), Arrays.toString(sortertY));
     }
 
+    
+
+    public Punkt[] hentPunkter() {
+        return sortertX;
+    }
+
     /*
     må kanskje gjøre om denne metoden, men det fungerer ok for nå
     feks, så må for øyeblikket A alltid være det minste, og dereter B
     og sikkert bedre måter å gjøre det min/max / +-1 på
     */
+    
     public Punkt[] punkterIIntervall(Punkt A, Punkt B) {
-        //adderer/subtraherer 1 for å få inklusiv, tar max/min for å unngå error ved for store verdier
         int xStart = Math.max(0, finnIndeks(sortertX, A) - 1);
-        int xSlutt = Math.min(sortertX.length, finnIndeks(sortertX, B) + 1);
+        int xSlutt = Math.min(sortertX.length, finnIndeks(sortertX, B) + 1); //plusser på 1 for å få inklusiv
 
         Punkt[] punkter = Arrays.copyOfRange(sortertX, xStart, xSlutt);
         
@@ -99,7 +105,6 @@ class Rutenett {
         }
         return i;
     }
+    
 
 }
-
-

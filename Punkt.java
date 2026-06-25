@@ -14,7 +14,7 @@ class Punkt implements Comparable<Punkt> {
 
     @Override
     public String toString() {
-        return String.format("(%d, %d)", x, y);
+        return String.format("(%s, %s)", x, y);
     }
 
     public Punkt addisjon(int i) {
@@ -78,6 +78,52 @@ class Punkt implements Comparable<Punkt> {
             y = Math.max(y, p.y);
         }
         return new Punkt(x, y);
+    }
+
+    public static Punkt[] shuffelSort(Punkt[] arr) {
+        Punkt[] retur = new Punkt[arr.length];
+        if (arr.length < 2) {
+            if (arr.length == 0) {
+                return retur;
+            }
+            retur[0] = arr[0];
+            return retur;
+        }
+
+        int minstIndeks = 0;
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[minstIndeks].compareTo(arr[i]) > 0) {
+                minstIndeks = i;
+            }
+        }
+        
+        int forrige = minstIndeks - 1 > 0 ? minstIndeks - 1 : arr.length - 1;
+        int neste = minstIndeks + 1 < arr.length ? minstIndeks + 1 : 0;
+        int nesteIndeks = arr[forrige].compareTo(arr[neste]) < 0 ? forrige : neste;
+
+        int j = 0;
+        if (nesteIndeks - minstIndeks > 0) {
+            for (int i = minstIndeks; i < arr.length; i++) {
+                retur[j] = arr[i];
+                j++;
+            }
+            for (int i = 0; i < minstIndeks; i++) {
+                retur[j] = arr[i];
+                j++;
+            }
+        }
+        else {
+            for (int i = minstIndeks; i >= 0; i--) {
+                retur[j] = arr[i];
+                j++;
+            }
+            for (int i = arr.length - 1; i > minstIndeks; i--) {
+                retur[j] = arr[i];
+                j++;
+            }
+        }
+
+        return retur;
     }
 
 }

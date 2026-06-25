@@ -1,6 +1,6 @@
 import java.util.*;
 
-class Kant {
+abstract class Kant {
     protected final Punkt[] P;
 
     public Kant(Punkt... p) {
@@ -28,43 +28,19 @@ class Kant {
 }
 
 class Trekant extends Kant {
+
+    private final Punkt S;
+    private final int r2;
     
     public Trekant(Punkt A, Punkt B, Punkt C) {
         super(A, B, C);
+        S = sirkelSentrum();
+        r2 = finnRadiusKvadrat();
     }
 
-    public Trekant[] splitTrekant(Punkt p) {
-        return new Trekant[] {new Trekant(P[0], P[1], p), new Trekant(P[0], p, P[2]), new Trekant(p, P[1], P[2])};
+    public Trekant(Linje l, Punkt A) {
+        this(l.P[0], l.P[1], A);
     }
-
-    public static Trekant[] flipTrekant(Linje felles, Linje ny) {
-        return new Trekant[] {new Trekant(felles.hentPunkter()[0], ny.hentPunkter()[0], ny.hentPunkter()[1]), new Trekant(felles.hentPunkter()[1], ny.hentPunkter()[0], ny.hentPunkter()[1])};
-    }
-
-    public static Linje kortere (Linje l, Trekant t1, Trekant t2) {
-        Linje ny = Linje.hentLinje(l.fritsåtendePunkt(t1), l.fritsåtendePunkt(t2));
-        if (ny.kvadratLengde() < l.kvadratLengde()) {
-            return ny;
-        }
-        return null;
-    }
-
-    public Linje[] hentLinjer() {
-        return new Linje[] {Linje.hentLinje(P[0], P[1]), Linje.hentLinje(P[0], P[2]), Linje.hentLinje(P[1], P[2])};
-    }
-
-    public Linje[] hentLinjer(Linje ekskludertLinje) {
-        Punkt p = ekskludertLinje.fritsåtendePunkt(this);
-        return new Linje[] {Linje.hentLinje(ekskludertLinje.hentPunkter()[0], p), Linje.hentLinje(ekskludertLinje.hentPunkter()[1], p)};
-    }
-
-    public boolean innenforTrekant(Punkt p) {
-        int d1 = p.sign(P[0], P[1]);
-        int d2 = p.sign(P[1], P[2]);
-        int d3 = p.sign(P[2], P[0]);
-
-        return ((d1 > 0 && d2 > 0 && d3 > 0) || (d1 < 0 && d2 < 0 && d3 < 0));
-    } 
 
     public Punkt sørVestHjørne() {
         return Punkt.min(P);
@@ -74,6 +50,43 @@ class Trekant extends Kant {
         return Punkt.max(P);
     }
 
+    private Punkt sirkelSentrum() {
+        int d = 2 * (P[0].x * (P[1].y - P[2].y) + P[1].x * (P[2].y - P[0].y) + P[2].x * (P[0].y - P[1].y));
+
+        if (d == 0) { //punktene er på rett linje
+            return null;
+        }
+
+        int h = (P[0].square()*(P[1].y - P[2].y) + P[1].square()*(P[2].y - P[0].y) + P[2].square()*(P[0].y - P[1].y)) / d;
+        int k = (P[0].square()*(P[2].x - P[1].x) + P[1].square()*(P[0].x - P[2].x) + P[2].square()*(P[1].x - P[0].x)) / d;
+        return new Punkt(h, k);
+    } 
+
+    private int finnRadiusKvadrat() {
+        if (S == null) {
+            return 0;
+        }
+        return pow2(P[0].x - S.x) + pow2(P[0].y - S.y);
+    }
+
+    private static int pow2(int tall) {
+        return tall*tall;
+    }
+
+    public boolean innenforSirkel(Punkt p) {
+        if (S == null) {
+            return false;
+        }
+        return pow2(p.x - S.x) + pow2(p.y - S.y) <= r2;
+    }
+
+    public Linje[] kanter() {
+        return new Linje[] {Linje.hentLinje(P[0], P[1]), Linje.hentLinje(P[0], P[2]), Linje.hentLinje(P[1], P[2])};
+    }
+
+    public Punkt hentSirkelSentrum() {
+        return S;
+    }
 }
 
 class Linje extends Kant {
@@ -105,6 +118,15 @@ class Linje extends Kant {
                 return trekantPunkt;
             }
         }
-    throw new IllegalArgumentException("Linjen tilhører ikke denne trekanten");
+        throw new IllegalArgumentException("Linjen tilhører ikke denne trekanten");
+    }
 }
+
+class Polynom extends Kant {
+
+    public Polynom(Punkt... p) {
+        super(p);
+    }
+
+    
 }

@@ -30,7 +30,7 @@ abstract class Kant {
 class Trekant extends Kant {
 
     private final Punkt S;
-    private final int r2;
+    private final float r2;
     
     public Trekant(Punkt A, Punkt B, Punkt C) {
         super(A, B, C);
@@ -51,25 +51,25 @@ class Trekant extends Kant {
     }
 
     private Punkt sirkelSentrum() {
-        int d = 2 * (P[0].x * (P[1].y - P[2].y) + P[1].x * (P[2].y - P[0].y) + P[2].x * (P[0].y - P[1].y));
+        float d = 2 * (P[0].x * (P[1].y - P[2].y) + P[1].x * (P[2].y - P[0].y) + P[2].x * (P[0].y - P[1].y));
 
         if (d == 0) { //punktene er på rett linje
             return null;
         }
 
-        int h = (P[0].square()*(P[1].y - P[2].y) + P[1].square()*(P[2].y - P[0].y) + P[2].square()*(P[0].y - P[1].y)) / d;
-        int k = (P[0].square()*(P[2].x - P[1].x) + P[1].square()*(P[0].x - P[2].x) + P[2].square()*(P[1].x - P[0].x)) / d;
+        float h = (P[0].square()*(P[1].y - P[2].y) + P[1].square()*(P[2].y - P[0].y) + P[2].square()*(P[0].y - P[1].y)) / d;
+        float k = (P[0].square()*(P[2].x - P[1].x) + P[1].square()*(P[0].x - P[2].x) + P[2].square()*(P[1].x - P[0].x)) / d;
         return new Punkt(h, k);
     } 
 
-    private int finnRadiusKvadrat() {
+    private float finnRadiusKvadrat() {
         if (S == null) {
             return 0;
         }
         return pow2(P[0].x - S.x) + pow2(P[0].y - S.y);
     }
 
-    private static int pow2(int tall) {
+    private static float pow2(float tall) {
         return tall*tall;
     }
 
@@ -82,6 +82,10 @@ class Trekant extends Kant {
 
     public Linje[] kanter() {
         return new Linje[] {Linje.hentLinje(P[0], P[1]), Linje.hentLinje(P[0], P[2]), Linje.hentLinje(P[1], P[2])};
+    }
+
+    public boolean erITrekant(Linje l) {
+        return erIKant(l.P[0]) && erIKant(l.P[1]);
     }
 
     public Punkt hentSirkelSentrum() {
@@ -108,7 +112,7 @@ class Linje extends Kant {
         return LINJER.computeIfAbsent(nøkkel, k -> new Linje(k.A, k.B));
     }
 
-    public int kvadratLengde() {
+    public float kvadratLengde() {
         return P[1].addisjon(P[0].neg()).square();
     }
 
@@ -122,11 +126,36 @@ class Linje extends Kant {
     }
 }
 
-class Polynom extends Kant {
+class Polygon extends Kant {
+    
+    private final Punkt S;
 
-    public Polynom(Punkt... p) {
+    public Polygon(Punkt S, Punkt... p) {
+        this.S = S;
         super(p);
     }
+
+    public static Polygon newPolygon(Punkt p, Set<Trekant> trekanter) {
+        return new Polygon(p, slåSammen(p, trekanter));
+    }
+
+    private static Punkt[] slåSammen(Punkt p, Set<Trekant> trekanter) {
+        Punkt[] punkter = new Punkt[trekanter.size()];
+
+        int i = 0;
+        for (Trekant t: trekanter) {
+            punkter[i++] = t.hentSirkelSentrum();
+        }
+
+        Arrays.sort(punkter, (p1, p2) -> { //ai
+            double vinkel1 = Math.atan2(p1.y - p.y, p1.x - p.x);
+            double vinkel2 = Math.atan2(p2.y - p.y, p2.x - p.x);
+            return Double.compare(vinkel1, vinkel2);
+        });
+
+        return punkter;
+    }
+
 
     
 }

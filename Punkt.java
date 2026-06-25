@@ -1,23 +1,23 @@
 class Punkt implements Comparable<Punkt> {
     
-    public final int x;
-    public final int y;
+    public final float x;
+    public final float y;
 
-    public Punkt(int x, int y) {
+    public Punkt(float x, float y) {
         this.x = x;
         this.y = y;
     }
 
-    public int square() {
+    public float square() {
         return x*x + y*y;
     }
 
     @Override
     public String toString() {
-        return String.format("(%s, %s)", x, y);
+        return String.format("(%.0f, %.0f)", x, y);
     }
 
-    public Punkt addisjon(int i) {
+    public Punkt addisjon(float i) {
         return new Punkt(x + i, y + i);
     }
 
@@ -29,7 +29,7 @@ class Punkt implements Comparable<Punkt> {
         return new Punkt(-x, -y);
     }
 
-    public int sign(Punkt A, Punkt B) {
+    public float sign(Punkt A, Punkt B) {
         return (x - B.x) * (A.y - B.y) - (A.x - B.x) * (y - B.y);
     }
 
@@ -57,8 +57,8 @@ class Punkt implements Comparable<Punkt> {
             throw new IllegalArgumentException();
         }
 
-        int x, y;
-        x = y = Integer.MAX_VALUE;
+        float x, y;
+        x = y = Float.MAX_VALUE;
         for (Punkt p: arr) {
             x = Math.min(x, p.x);
             y = Math.min(y, p.y);
@@ -71,8 +71,8 @@ class Punkt implements Comparable<Punkt> {
             throw new IllegalArgumentException();
         }
 
-        int x, y;
-        x = y = Integer.MIN_VALUE;
+        float x, y;
+        x = y = Float.MIN_VALUE;
         for (Punkt p: arr) {
             x = Math.max(x, p.x);
             y = Math.max(y, p.y);
@@ -96,7 +96,7 @@ class Punkt implements Comparable<Punkt> {
                 minstIndeks = i;
             }
         }
-        
+
         int forrige = minstIndeks - 1 > 0 ? minstIndeks - 1 : arr.length - 1;
         int neste = minstIndeks + 1 < arr.length ? minstIndeks + 1 : 0;
         int nesteIndeks = arr[forrige].compareTo(arr[neste]) < 0 ? forrige : neste;

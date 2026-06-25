@@ -1,6 +1,4 @@
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
+import java.util.*;
 
 class Rutenett {
 
@@ -16,9 +14,17 @@ class Rutenett {
         this(new RandomModell(antall, bredde, høyde));
     }
 
+    private Trekant newSuperTrekant() {
+        return new Trekant(new Punkt(-3 * maks.x, -maks.y), new Punkt(3 * maks.x, -maks.y), new Punkt(0, 3 * maks.y));
+    }
+
     public Set<Trekant> finnTrekanter() {
+        Trekant superTrekant = newSuperTrekant();
+        return finnTrekanter(superTrekant);
+    }
+
+    private Set<Trekant> finnTrekanter(Trekant superTrekant) {
         Set<Trekant> trekanter = new HashSet<>();
-        Trekant superTrekant = new Trekant(new Punkt(-3 * maks.x, -maks.y), new Punkt(3 * maks.x, -maks.y), new Punkt(0, 3 * maks.y));
         trekanter.add(superTrekant);
 
         for (Punkt p: allePunkter) {
@@ -84,15 +90,44 @@ class Rutenett {
         return punkterIIntervall(A.x, A.y, B.x, B.y);
     }
 
-    public Punkt[] punkterIIntervall(int x1, int y1, int x2, int y2) {
-        int minX = Math.min(x1, x2);
-        int maxX = Math.max(x1, x2);
-        int minY = Math.min(y1, y2);
-        int maxY = Math.max(y1, y2);
+    public Punkt[] punkterIIntervall(float x1, float y1, float x2, float y2) {
+        float minX = Math.min(x1, x2);
+        float maxX = Math.max(x1, x2);
+        float minY = Math.min(y1, y2);
+        float maxY = Math.max(y1, y2);
 
         return Arrays.stream(allePunkter)
             .filter(p -> p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY)
             .toArray(Punkt[]::new);
+    }
+
+    
+    private Map<Punkt, Set<Trekant>> sammenhengendeTreknaterPunkt(Set<Trekant> trekanter, Trekant superTrekant) {
+        Map<Punkt, Set<Trekant>> linjer = new HashMap<>();
+        for (Trekant t: trekanter) {
+            for (Punkt p: t.hentPunkter()) {
+                Set<Trekant> liste = linjer.computeIfAbsent(p, k -> new HashSet<>());
+                liste.add(t);
+            }
+        }
+        for (Punkt p: superTrekant.hentPunkter()) {
+            linjer.remove(p);
+        }
+        return linjer;
+    }
+
+    public Set<Polygon> finnPolygon(Set<Trekant> trekanter, Trekant superTrekant) {
+        Map<Punkt, Set<Trekant>> map = sammenhengendeTreknaterPunkt(trekanter, superTrekant);
+        Set<Polygon> figur = new HashSet<>();
+        for (Punkt p: map.keySet()) {
+            figur.add(Polygon.newPolygon(p, map.get(p)));
+        }
+        return figur;
+    }
+
+    public Set<Polygon> finnPolygon() {
+        Trekant superTrekant = newSuperTrekant();
+        return finnPolygon(finnTrekanter(superTrekant), superTrekant);
     }
 
 }

@@ -14,6 +14,14 @@ class Rutenett {
         this(new RandomModell(antall, bredde, høyde));
     }
 
+    public float maksX() {
+        return maks.x;
+    }
+
+    public float maksY() {
+        return maks.y;
+    }
+
     private Trekant newSuperTrekant() {
         return new Trekant(new Punkt(-3 * maks.x, -maks.y), new Punkt(3 * maks.x, -maks.y), new Punkt(0, 3 * maks.y));
     }
@@ -46,6 +54,42 @@ class Rutenett {
 
         //fjernSuperTrekant(trekanter, superTrekant);
         return trekanter;
+    }
+
+    private Set<Trekant> finnTrekanter2(Trekant superTrekant) {
+        Set<Trekant> aktivTrekanter = new HashSet<>();
+        Set<Trekant> ferdigTrekanter = new HashSet<>();
+        aktivTrekanter.add(superTrekant);
+
+        for (Punkt p: allePunkter) {
+            Set<Trekant> dårligeTrekanter = new HashSet<>();
+
+            Iterator<Trekant> it = aktivTrekanter.iterator();
+            while (it.hasNext()) {
+                Trekant t = it.next();
+
+                if (t.hentSirkelSentrum() == null) {
+                    continue;
+                }
+
+                if (t.sirkelTilHøyreForPunkt(p)) {
+                    ferdigTrekanter.add(t);
+                    it.remove();
+                }
+                else if (t.innenforSirkel(p)) {
+                    dårligeTrekanter.add(t);
+                }
+            }
+
+            Set<Linje> hull = finnHullKant(dårligeTrekanter);
+            aktivTrekanter.removeAll(dårligeTrekanter);
+
+            for (Linje l: hull) {
+                aktivTrekanter.add(new Trekant(l, p));
+            }
+        }
+
+        return ferdigTrekanter;
     }
 
     private Set<Linje> finnHullKant(Set<Trekant> trekanter) {

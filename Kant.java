@@ -27,20 +27,13 @@ abstract class Kant {
 
 }
 
-class Trekant extends Kant {
+abstract class MangeKant extends Kant {
 
-    private final Punkt S;
-    private final float r2;
-    
-    public Trekant(Punkt A, Punkt B, Punkt C) {
-        super(A, B, C);
-        S = sirkelSentrum();
-        r2 = finnRadiusKvadrat();
+    public MangeKant(Punkt... punkter) {
+        super(punkter);
     }
 
-    public Trekant(Linje l, Punkt A) {
-        this(l.P[0], l.P[1], A);
-    }
+    abstract public Punkt hentSirkelSentrum();
 
     public Punkt sørVestHjørne() {
         return Punkt.min(P);
@@ -50,15 +43,32 @@ class Trekant extends Kant {
         return Punkt.max(P);
     }
 
-    private Punkt sirkelSentrum() {
-        float d = 2 * (P[0].x * (P[1].y - P[2].y) + P[1].x * (P[2].y - P[0].y) + P[2].x * (P[0].y - P[1].y));
+}
+
+class Trekant extends MangeKant {
+
+    private final Punkt S;
+    private final float r2;
+    
+    public Trekant(Punkt A, Punkt B, Punkt C) {
+        super(A, B, C);
+        S = sirkelSentrum(A, B, C);
+        r2 = finnRadiusKvadrat();
+    }
+
+    public Trekant(Linje l, Punkt A) {
+        this(l.P[0], l.P[1], A);
+    }
+
+    private Punkt sirkelSentrum(Punkt A, Punkt B, Punkt C) {
+        float d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
 
         if (d == 0) { //punktene er på rett linje
             return null;
         }
 
-        float h = (P[0].square()*(P[1].y - P[2].y) + P[1].square()*(P[2].y - P[0].y) + P[2].square()*(P[0].y - P[1].y)) / d;
-        float k = (P[0].square()*(P[2].x - P[1].x) + P[1].square()*(P[0].x - P[2].x) + P[2].square()*(P[1].x - P[0].x)) / d;
+        float h = (A.square()*(B.y - C.y) + B.square()*(C.y - A.y) + C.square()*(A.y - B.y)) / d;
+        float k = (A.square()*(C.x - B.x) + B.square()*(A.x - C.x) + C.square()*(B.x - A.x)) / d;
         return new Punkt(h, k);
     } 
 
@@ -78,6 +88,12 @@ class Trekant extends Kant {
             return false;
         }
         return pow2(p.x - S.x) + pow2(p.y - S.y) <= r2;
+    }
+
+    public boolean sirkelTilHøyreForPunkt(Punkt p) {
+        
+        double dx = p.x - S.x;
+        return dx > 0 && (dx * dx) > r2;
     }
 
     public Linje[] kanter() {
@@ -126,7 +142,7 @@ class Linje extends Kant {
     }
 }
 
-class Polygon extends Kant {
+class Polygon extends MangeKant {
     
     private final Punkt S;
 
@@ -154,6 +170,10 @@ class Polygon extends Kant {
         });
 
         return punkter;
+    }
+
+    public Punkt hentSirkelSentrum() {
+        return S;
     }
 
 

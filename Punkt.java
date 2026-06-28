@@ -1,14 +1,14 @@
 class Punkt implements Comparable<Punkt> {
     
-    public final float x;
-    public final float y;
+    public final double x;
+    public final double y;
 
-    public Punkt(float x, float y) {
+    public Punkt(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public float square() {
+    public double square() {
         return x*x + y*y;
     }
 
@@ -17,7 +17,7 @@ class Punkt implements Comparable<Punkt> {
         return String.format("(%.0f, %.0f)", x, y);
     }
 
-    public Punkt addisjon(float i) {
+    public Punkt addisjon(double i) {
         return new Punkt(x + i, y + i);
     }
 
@@ -29,7 +29,7 @@ class Punkt implements Comparable<Punkt> {
         return new Punkt(-x, -y);
     }
 
-    public float sign(Punkt A, Punkt B) {
+    public double sign(Punkt A, Punkt B) {
         return (x - B.x) * (A.y - B.y) - (A.x - B.x) * (y - B.y);
     }
 
@@ -57,7 +57,7 @@ class Punkt implements Comparable<Punkt> {
             throw new IllegalArgumentException();
         }
 
-        float x, y;
+        double x, y;
         x = y = Float.MAX_VALUE;
         for (Punkt p: arr) {
             x = Math.min(x, p.x);
@@ -71,7 +71,7 @@ class Punkt implements Comparable<Punkt> {
             throw new IllegalArgumentException();
         }
 
-        float x, y;
+        double x, y;
         x = y = Float.MIN_VALUE;
         for (Punkt p: arr) {
             x = Math.max(x, p.x);

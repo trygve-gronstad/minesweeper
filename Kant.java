@@ -25,6 +25,13 @@ abstract class Kant {
         return String.format(Arrays.toString(P));
     }
 
+    public Punkt sørVestHjørne() {
+        return Punkt.min(P);
+    }
+
+    public Punkt nordØstHjørne() {
+        return Punkt.max(P);
+    }
 }
 
 abstract class MangeKant extends Kant {
@@ -35,20 +42,12 @@ abstract class MangeKant extends Kant {
 
     abstract public Punkt hentSirkelSentrum();
 
-    public Punkt sørVestHjørne() {
-        return Punkt.min(P);
-    }
-
-    public Punkt nordØstHjørne() {
-        return Punkt.max(P);
-    }
-
 }
 
 class Trekant extends MangeKant {
 
     private final Punkt S;
-    private final float r2;
+    private final double r2;
     
     public Trekant(Punkt A, Punkt B, Punkt C) {
         super(A, B, C);
@@ -61,25 +60,25 @@ class Trekant extends MangeKant {
     }
 
     private Punkt sirkelSentrum(Punkt A, Punkt B, Punkt C) {
-        float d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+        double d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
 
         if (d == 0) { //punktene er på rett linje
             return null;
         }
 
-        float h = (A.square()*(B.y - C.y) + B.square()*(C.y - A.y) + C.square()*(A.y - B.y)) / d;
-        float k = (A.square()*(C.x - B.x) + B.square()*(A.x - C.x) + C.square()*(B.x - A.x)) / d;
+        double h = (A.square()*(B.y - C.y) + B.square()*(C.y - A.y) + C.square()*(A.y - B.y)) / d;
+        double k = (A.square()*(C.x - B.x) + B.square()*(A.x - C.x) + C.square()*(B.x - A.x)) / d;
         return new Punkt(h, k);
     } 
 
-    private float finnRadiusKvadrat() {
+    private double finnRadiusKvadrat() {
         if (S == null) {
             return 0;
         }
         return pow2(P[0].x - S.x) + pow2(P[0].y - S.y);
     }
 
-    private static float pow2(float tall) {
+    private static double pow2(double tall) {
         return tall*tall;
     }
 
@@ -91,7 +90,6 @@ class Trekant extends MangeKant {
     }
 
     public boolean sirkelTilHøyreForPunkt(Punkt p) {
-        
         double dx = p.x - S.x;
         return dx > 0 && (dx * dx) > r2;
     }
@@ -128,7 +126,7 @@ class Linje extends Kant {
         return LINJER.computeIfAbsent(nøkkel, k -> new Linje(k.A, k.B));
     }
 
-    public float kvadratLengde() {
+    public double kvadratLengde() {
         return P[1].addisjon(P[0].neg()).square();
     }
 

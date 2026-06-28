@@ -14,11 +14,11 @@ class Rutenett {
         this(new RandomModell(antall, bredde, høyde));
     }
 
-    public float maksX() {
+    public double maksX() {
         return maks.x;
     }
 
-    public float maksY() {
+    public double maksY() {
         return maks.y;
     }
 
@@ -134,11 +134,11 @@ class Rutenett {
         return punkterIIntervall(A.x, A.y, B.x, B.y);
     }
 
-    public Punkt[] punkterIIntervall(float x1, float y1, float x2, float y2) {
-        float minX = Math.min(x1, x2);
-        float maxX = Math.max(x1, x2);
-        float minY = Math.min(y1, y2);
-        float maxY = Math.max(y1, y2);
+    public Punkt[] punkterIIntervall(double x1, double y1, double x2, double y2) {
+        double minX = Math.min(x1, x2);
+        double maxX = Math.max(x1, x2);
+        double minY = Math.min(y1, y2);
+        double maxY = Math.max(y1, y2);
 
         return Arrays.stream(allePunkter)
             .filter(p -> p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY)

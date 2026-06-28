@@ -122,3 +122,37 @@ class GridModell implements PunktDistribusjon {
         return p;
     }
 }
+
+class VogelsModell implements PunktDistribusjon {
+
+    private final int ANT, LENGDE, BREDDE;
+    private final double VINKEL;
+    public static final double GYLENDESNITT = (1 + Math.sqrt(5)) / 2 ;
+
+    public VogelsModell(int antall, int lengde, int bredde) {
+        this(antall, lengde, bredde, GYLENDESNITT);
+    }
+
+    public VogelsModell(int antall, int lengde, int bredde, double snitt) {
+        LENGDE = lengde;
+        BREDDE = bredde;
+        ANT = antall;
+        VINKEL = 2 * Math.PI * (1 - 1 / snitt);
+    }
+
+    @Override
+    public Punkt[] finnPunkter() {
+        Punkt[] p = new Punkt[ANT];
+        double c = Math.min(LENGDE, BREDDE) / (2 * Math.sqrt(ANT - 1));
+        int x = LENGDE / 2;
+        int y = BREDDE / 2;
+
+        for (int i = 0; i < ANT; i++) {
+            double r = c * Math.sqrt(i);
+            double theta = i * VINKEL;
+            p[i] = new Punkt(r * Math.cos(theta) + x, r * Math.sin(theta) + y);
+        }
+        return p;
+    }
+
+}

@@ -26,17 +26,17 @@ class Rutenett {
         return new Trekant(new Punkt(-3 * maks.x, -maks.y), new Punkt(3 * maks.x, -maks.y), new Punkt(0, 3 * maks.y));
     }
 
-    public Set<Trekant> finnTrekanter() {
+    public Collection<Trekant> finnTrekanter() {
         Trekant superTrekant = newSuperTrekant();
         return finnTrekanter(superTrekant);
     }
 
-    private Set<Trekant> finnTrekanter(Trekant superTrekant) {
-        Set<Trekant> trekanter = new HashSet<>();
+    private Collection<Trekant> finnTrekanter(Trekant superTrekant) {
+        Collection<Trekant> trekanter = new HashSet<>();
         trekanter.add(superTrekant);
 
         for (Punkt p: allePunkter) {
-            Set<Trekant> dårligeTrekanter = new HashSet<>();
+            Collection<Trekant> dårligeTrekanter = new HashSet<>();
 
             for (Trekant t: trekanter) {
                 if (t.innenforSirkel(p)) {
@@ -44,7 +44,7 @@ class Rutenett {
                 }
             }
 
-            Set<Linje> hull = finnHullKant(dårligeTrekanter);
+            Collection<Linje> hull = finnHullKant(dårligeTrekanter);
             trekanter.removeAll(dårligeTrekanter);
 
             for (Linje l: hull) {
@@ -56,13 +56,13 @@ class Rutenett {
         return trekanter;
     }
 
-    private Set<Trekant> finnTrekanter2(Trekant superTrekant) {
-        Set<Trekant> aktivTrekanter = new HashSet<>();
-        Set<Trekant> ferdigTrekanter = new HashSet<>();
+    private Collection<Trekant> finnTrekanter2(Trekant superTrekant) {
+        Collection<Trekant> aktivTrekanter = new HashSet<>();
+        Collection<Trekant> ferdigTrekanter = new HashSet<>();
         aktivTrekanter.add(superTrekant);
 
         for (Punkt p: allePunkter) {
-            Set<Trekant> dårligeTrekanter = new HashSet<>();
+            Collection<Trekant> dårligeTrekanter = new HashSet<>();
 
             Iterator<Trekant> it = aktivTrekanter.iterator();
             while (it.hasNext()) {
@@ -81,7 +81,7 @@ class Rutenett {
                 }
             }
 
-            Set<Linje> hull = finnHullKant(dårligeTrekanter);
+            Collection<Linje> hull = finnHullKant(dårligeTrekanter);
             aktivTrekanter.removeAll(dårligeTrekanter);
 
             for (Linje l: hull) {
@@ -92,8 +92,8 @@ class Rutenett {
         return ferdigTrekanter;
     }
 
-    private Set<Linje> finnHullKant(Set<Trekant> trekanter) {
-        Set<Linje> kanter = new HashSet<>();
+    private Collection<Linje> finnHullKant(Collection<Trekant> trekanter) {
+        Collection<Linje> kanter = new HashSet<>();
 
         for (Trekant t: trekanter) {
             for (Linje l: t.kanter()) {
@@ -109,9 +109,9 @@ class Rutenett {
         return kanter;
     }
 
-    private void fjernSuperTrekant(Set<Trekant> trekanter, Trekant fjern) {
+    private void fjernSuperTrekant(Collection<Trekant> trekanter, Trekant fjern) {
         for (Punkt p: fjern.hentPunkter()) {
-            Set<Trekant> åFjerne = new HashSet<>();
+            Collection<Trekant> åFjerne = new HashSet<>();
             for (Trekant t: trekanter) {
                 if (t.erIKant(p)) {
                     åFjerne.add(t);
@@ -146,11 +146,11 @@ class Rutenett {
     }
 
     
-    private Map<Punkt, Set<Trekant>> sammenhengendeTreknaterPunkt(Set<Trekant> trekanter, Trekant superTrekant) {
-        Map<Punkt, Set<Trekant>> linjer = new HashMap<>();
+    private Map<Punkt, Collection<Trekant>> sammenhengendeTreknaterPunkt(Collection<Trekant> trekanter, Trekant superTrekant) {
+        Map<Punkt, Collection<Trekant>> linjer = new HashMap<>();
         for (Trekant t: trekanter) {
             for (Punkt p: t.hentPunkter()) {
-                Set<Trekant> liste = linjer.computeIfAbsent(p, k -> new HashSet<>());
+                Collection<Trekant> liste = linjer.computeIfAbsent(p, k -> new HashSet<>());
                 liste.add(t);
             }
         }
@@ -160,18 +160,18 @@ class Rutenett {
         return linjer;
     }
 
-    public Set<Polygon> finnPolygon(Set<Trekant> trekanter, Trekant superTrekant) {
-        Map<Punkt, Set<Trekant>> map = sammenhengendeTreknaterPunkt(trekanter, superTrekant);
-        Set<Polygon> figur = new HashSet<>();
+    public Collection<MangeKant> finnMangeKant(Collection<Trekant> trekanter, Trekant superTrekant) {
+        Map<Punkt, Collection<Trekant>> map = sammenhengendeTreknaterPunkt(trekanter, superTrekant);
+        Collection<MangeKant> figur = new HashSet<>();
         for (Punkt p: map.keySet()) {
-            figur.add(Polygon.newPolygon(p, map.get(p)));
+            figur.add(MangeKant.newMangeKant(p, map.get(p)));
         }
         return figur;
     }
 
-    public Set<Polygon> finnPolygon() {
+    public Collection<MangeKant> finnMangeKant() {
         Trekant superTrekant = newSuperTrekant();
-        return finnPolygon(finnTrekanter(superTrekant), superTrekant);
+        return finnMangeKant(finnTrekanter(superTrekant), superTrekant);
     }
 
 }

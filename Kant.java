@@ -32,19 +32,30 @@ abstract class Kant {
     public Punkt nordØstHjørne() {
         return Punkt.max(P);
     }
-}
 
-abstract class MangeKant extends Kant {
-
-    public MangeKant(Punkt... punkter) {
-        super(punkter);
+    public int size() {
+        return P.length;
     }
 
-    abstract public Punkt hentSirkelSentrum();
+    public int[] xArr() {
+        return hentKodeArray(true);
+    }
 
+    public int[] yArr() {
+        return hentKodeArray(false);
+    }
+
+    private int[] hentKodeArray(boolean x) {
+        int[] n = new int[size()];
+        for (int i = 0; i < size(); i++) {
+            n[i] = (int) (x ? P[i].x : P[i].y);
+        }
+        return n;
+    }
 }
 
-class Trekant extends MangeKant {
+
+class Trekant extends Kant {
 
     private final Punkt S;
     private final double r2;
@@ -140,20 +151,20 @@ class Linje extends Kant {
     }
 }
 
-class Polygon extends MangeKant {
+class MangeKant extends Kant {
     
     private final Punkt S;
 
-    public Polygon(Punkt S, Punkt... p) {
+    public MangeKant(Punkt S, Punkt... p) {
         this.S = S;
         super(p);
     }
 
-    public static Polygon newPolygon(Punkt p, Set<Trekant> trekanter) {
-        return new Polygon(p, slåSammen(p, trekanter));
+    public static MangeKant newMangeKant(Punkt p, Collection<Trekant> trekanter) {
+        return new MangeKant(p, slåSammen(p, trekanter));
     }
 
-    private static Punkt[] slåSammen(Punkt p, Set<Trekant> trekanter) {
+    private static Punkt[] slåSammen(Punkt p, Collection<Trekant> trekanter) {
         Punkt[] punkter = new Punkt[trekanter.size()];
 
         int i = 0;

@@ -123,17 +123,17 @@ class GridModell implements PunktDistribusjon {
     }
 }
 
-class VogelsModell implements PunktDistribusjon {
+class SpiralModell implements PunktDistribusjon {
 
     private final int ANT, LENGDE, BREDDE;
     private final double VINKEL;
     public static final double GYLENDESNITT = (1 + Math.sqrt(5)) / 2 ;
 
-    public VogelsModell(int antall, int lengde, int bredde) {
+    public SpiralModell(int antall, int lengde, int bredde) {
         this(antall, lengde, bredde, GYLENDESNITT);
     }
 
-    public VogelsModell(int antall, int lengde, int bredde, double snitt) {
+    public SpiralModell(int antall, int lengde, int bredde, double snitt) {
         LENGDE = lengde;
         BREDDE = bredde;
         ANT = antall;

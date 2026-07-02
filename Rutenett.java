@@ -27,8 +27,7 @@ class Rutenett {
     }
 
     public Collection<Trekant> finnTrekanter() {
-        Trekant superTrekant = newSuperTrekant();
-        return finnTrekanter(superTrekant);
+        return finnTrekanter(newSuperTrekant());
     }
 
     private Collection<Trekant> finnTrekanter(Trekant superTrekant) {
@@ -68,7 +67,7 @@ class Rutenett {
             while (it.hasNext()) {
                 Trekant t = it.next();
 
-                if (t.hentSirkelSentrum() == null) {
+                if (t.hentSentrum() == null) {
                     continue;
                 }
 

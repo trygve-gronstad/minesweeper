@@ -17,6 +17,23 @@ class Punkt implements Comparable<Punkt> {
         return String.format("(%.0f, %.0f)", x, y);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof Punkt) {
+            Punkt annen = (Punkt) o;
+            return Math.abs(annen.x - x) < 0.000001 && Math.abs(annen.y - y) < 0.000001;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (int) Math.round(x * 100) + (int) Math.round(y * 100);
+    }
+
     public Punkt addisjon(double i) {
         return new Punkt(x + i, y + i);
     }

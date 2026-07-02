@@ -13,7 +13,7 @@ abstract class Kant {
 
     public boolean erIKant(Punkt p) {
         for (Punkt punkt: P) {
-            if (p == punkt) {
+            if (p.equals(punkt)) {
                 return true;
             }
         }
@@ -55,14 +55,12 @@ abstract class Kant {
 }
 
 
-class Trekant extends Kant {
+class Trekant extends MangeKant {
 
-    private final Punkt S;
     private final double r2;
     
     public Trekant(Punkt A, Punkt B, Punkt C) {
-        super(A, B, C);
-        S = sirkelSentrum(A, B, C);
+        super(sirkelSentrum(A, B, C), A, B, C);
         r2 = finnRadiusKvadrat();
     }
 
@@ -70,7 +68,7 @@ class Trekant extends Kant {
         this(l.P[0], l.P[1], A);
     }
 
-    private Punkt sirkelSentrum(Punkt A, Punkt B, Punkt C) {
+    private static Punkt sirkelSentrum(Punkt A, Punkt B, Punkt C) {
         double d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
 
         if (d == 0) { //punktene er på rett linje
@@ -113,9 +111,10 @@ class Trekant extends Kant {
         return erIKant(l.P[0]) && erIKant(l.P[1]);
     }
 
-    public Punkt hentSirkelSentrum() {
-        return S;
+    public Punkt hentSentrum(double minX, double minY, double maksX, double maksY) {
+        return new Punkt(Math.min(maksX, Math.max(S.x, minX)), Math.min(maksY, Math.max(S.y, minY)));
     }
+
 }
 
 class Linje extends Kant {
@@ -148,14 +147,14 @@ class Linje extends Kant {
             }
         }
         throw new IllegalArgumentException("Linjen tilhører ikke denne trekanten");
-    }
+    } 
 }
 
 class MangeKant extends Kant {
     
-    private final Punkt S;
+    protected final Punkt S;
 
-    public MangeKant(Punkt S, Punkt... p) {
+    protected MangeKant(Punkt S, Punkt... p) {
         this.S = S;
         super(p);
     }
@@ -169,7 +168,7 @@ class MangeKant extends Kant {
 
         int i = 0;
         for (Trekant t: trekanter) {
-            punkter[i++] = t.hentSirkelSentrum();
+            punkter[i++] = t.hentSentrum();
         }
 
         Arrays.sort(punkter, (p1, p2) -> { //ai
@@ -181,7 +180,7 @@ class MangeKant extends Kant {
         return punkter;
     }
 
-    public Punkt hentSirkelSentrum() {
+    public Punkt hentSentrum() {
         return S;
     }
 

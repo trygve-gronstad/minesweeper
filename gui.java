@@ -6,10 +6,23 @@ import java.util.ArrayList;
 
 class View {
 
-    private final JFrame VINDU = new JFrame("Minesweeper");
-    private final JPanel RUTE_PANEL = new JPanel();
+    private final JFrame vindu = new JFrame("Minesweeper");
+
+    private final JPanel rutePanel = new JPanel();
+    private final JPanel panel = new JPanel(new BorderLayout());
+
+    private final JComboBox<String> vansklighetValg = new JComboBox<>(new String[] {"Easy", "Medium", "Diffucalt"});
+    private final JComboBox<String> modellValg = new JComboBox<>(new String[] {"Random", "Spiral", "Grid", "Hex"});
+
+    private final JLabel antFlagg = new JLabel();
+    private final JLabel tid = new JLabel("000");
+    private final JButton restart = new JButton("😊");
+
     private final Controller CON;
     private final List<KantKnapp> alleKnapper = new ArrayList<>();
+    private Dimension overflateStørrelse = new Dimension(1000, 800);
+    private int flagg = 0;
+    private boolean kanSpille = false;
 
     public View(Controller c) {
         CON = c;
@@ -26,73 +39,150 @@ class View {
             System.exit(1);
         }
 
-        VINDU.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        vindu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        RUTE_PANEL.setLayout(null);
+        panel.setPreferredSize(overflateStørrelse);
+        
 
-        VINDU.add(RUTE_PANEL);
-        VINDU.setPreferredSize(new Dimension(1000, 800));
+        JPanel toppPanel = new JPanel();
+        toppPanel.setLayout(new BoxLayout(toppPanel, BoxLayout.PAGE_AXIS));
 
-        VINDU.pack();
-        VINDU.setLocationRelativeTo(null);
-        VINDU.setVisible(true);
+        JPanel innstillingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        innstillingPanel.setBackground(Color.WHITE);
+        innstillingPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 35));
+        vansklighetValg.setSelectedIndex(1);
+        modellValg.setSelectedIndex(1);
+        innstillingPanel.add(vansklighetValg);
+        innstillingPanel.add(modellValg);
+        toppPanel.add(innstillingPanel);
+
+        JPanel forklaringPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+        gbc.weighty = 1;
+        forklaringPanel.setBackground(Color.GRAY);
+        forklaringPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 50));
+        restart.setPreferredSize(new Dimension(45, 45));
+        restart.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("ikke implementert");
+            }
+        });
+        restart.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        forklaringPanel.add(antFlagg, gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        forklaringPanel.add(restart, gbc);
+        gbc.gridx = 2;
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        forklaringPanel.add(tid, gbc);
+        forklaringPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        toppPanel.add(forklaringPanel);
+
+        panel.add(toppPanel, BorderLayout.NORTH);
+
+        rutePanel.setLayout(null);
+        panel.add(rutePanel, BorderLayout.CENTER);
+
+        vindu.add(panel);
+        vindu.setPreferredSize(overflateStørrelse);
+
+        vindu.pack();
+        vindu.setLocationRelativeTo(null);
+        vindu.setVisible(true);
     }
 
-    public void leggTilKnapp(Polygon p, int tekstX, int tekstY) {
-        KantKnapp k = new KantKnapp(p, tekstX, tekstY);
+    public void leggTilKnapp(Polygon polygon, int tekstX, int tekstY) {
+        KantKnapp k = new KantKnapp(polygon, tekstX, tekstY);
         alleKnapper.add(k);
-        RUTE_PANEL.add(k);
+        rutePanel.add(k);
     }
 
     public void lagtTilKnapper() {
-        RUTE_PANEL.revalidate();
-        RUTE_PANEL.repaint();
+        rutePanel.revalidate();
+        rutePanel.repaint();
 
-        VINDU.revalidate();
-        VINDU.repaint();
+        vindu.revalidate();
+        vindu.repaint();
+    }
+
+    public void restart(int antBomber) {
+        antFlagg.setText(String.format("%d", antBomber));
+        tid.setText("000");
+        flagg = antBomber;
+        restart.setText("😊");
+        restart.setBackground(null);
+        kanSpille = true;
+    }
+
+    public void slutt(boolean vunnet) {
+        if (vunnet) {
+            restart.setText("😎");
+            restart.setBackground(Color.GREEN);
+        }
+        else {
+            restart.setText("😵");
+            restart.setBackground(Color.RED);
+        }
+        kanSpille = false;
     }
 
     public void vis(int i) {
         alleKnapper.get(i).vis();
     }
 
+    public Dimension hentDimensjon() {
+        return overflateStørrelse;
+    }
+
     private class KantKnapp extends JButton {
 
-        private static int antall = 0;
-        private static final Font font = new Font("Display", Font.BOLD, 15);
-        private static final Color[] farger = new Color[] {Color.BLUE, Color.GREEN, Color.RED, Color.MAGENTA, Color.ORANGE, Color.CYAN, Color.BLACK, Color.WHITE};
+        private static int ANTALL = 0;
+        private static final Font FONT = new Font("Display", Font.BOLD, 15);
+        private static final Color[] FARGER = new Color[] {Color.BLUE, Color.GREEN, Color.RED, Color.MAGENTA, Color.ORANGE, Color.CYAN, Color.BLACK, Color.WHITE};
 
-        private final Polygon p;
+        private final Polygon polygon;
         private final int indeks, tekstX, tekstY;
         private boolean sjult = true;
 
-        public KantKnapp(Polygon p, int tekstX, int tekstY) {
+        public KantKnapp(Polygon polygon, int tekstX, int tekstY) {
             setContentAreaFilled(false);
             setFocusPainted(false);
             setBorderPainted(false);
-            setBounds(p.getBounds());
-            setFont(font);
+            setBounds(polygon.getBounds());
+            //setFont(FONT);
 
-            this.p = p;
-            indeks = antall++;
+            this.polygon = polygon;
+            indeks = ANTALL++;
             this.tekstX = tekstX;
             this.tekstY = tekstY;
 
             addMouseListener(new MouseAdapter(){
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        CON.trykkKnapp(indeks);
-                    } 
-                    else if (SwingUtilities.isRightMouseButton(e)) {
-                        if (sjult) {
-                            if (CON.byttFlagg(indeks)) {
-                                setText("🚩");
+                    if (kanSpille) {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            CON.trykkKnapp(indeks);
+                        } 
+                        else if (SwingUtilities.isRightMouseButton(e)) {
+                            if (sjult) {
+                                if (CON.byttFlagg(indeks)) {
+                                    setText("🚩");
+                                    flagg--;
+                                }
+                                else {
+                                    setText("");
+                                    flagg++;
+                                }
+                                antFlagg.setText(String.format("%d", flagg));
+                                repaint();
                             }
-                            else {
-                                setText("");
-                            }
-                            repaint();
                         }
                     }
                 }
@@ -110,10 +200,10 @@ class View {
                 g2.setColor(Color.LIGHT_GRAY);
             }
             g2.translate(-getX(), -getY());
-            g2.fillPolygon(p);
+            g2.fillPolygon(polygon);
 
             g2.setColor(Color.BLACK);
-            g2.drawPolygon(p);
+            g2.drawPolygon(polygon);
 
             g2.translate(getX(), getY());
 
@@ -133,7 +223,7 @@ class View {
 
         @Override
         public boolean contains(int x, int y) {
-            return p.contains(x + getX(), y + getY());
+            return polygon.contains(x + getX(), y + getY());
         }
 
         private String hentTekst() {
@@ -144,7 +234,7 @@ class View {
 
             if (x > 0) {
                 int i = Math.min(7, x-1);
-                setForeground(farger[i]);
+                setForeground(FARGER[i]);
                 return String.valueOf(x);
             }
 

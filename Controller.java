@@ -1,4 +1,5 @@
 import java.util.*;
+import java.awt.Polygon;
 
 public class Controller {
     
@@ -25,12 +26,17 @@ public class Controller {
         sattUtBomber = false;
     }
 
+    private Polygon hentPolygon(Rute r) {
+        return new Polygon(r.hentPolygonX(), r.hentPolygonY(), r.hentPolygonS());
+    }
+
     private void lagGuiRuter() {
         for (int i = 0; i < alleRuter.size(); i++) {
             Rute r = alleRuter.get(i);
-            DISPLAY.leggTilKnapp(r.hentPolygon(), r.hentSenterX(), r.hentSenterY());
+            DISPLAY.leggTilKnapp(hentPolygon(r), r.hentSenterX(), r.hentSenterY());
         }
         DISPLAY.lagtTilKnapper();
+        DISPLAY.restart(antMiner);
     }
 
     public String hentTegn(int nr) {
@@ -63,10 +69,10 @@ public class Controller {
 
         Collection<Rute> sjekket = new HashSet<>();
         if (alleRuter.get(nr).utvidetSjekk(sjekket)) {
-            System.out.println("Du tapte");
+            DISPLAY.slutt(false);
         }
         else if (Rute.vunnet(antMiner)) {
-            System.out.println("Du har vunnet");
+            DISPLAY.slutt(true);
         }
         for (Rute r: sjekket) {
             DISPLAY.vis(r.hentIndeks());

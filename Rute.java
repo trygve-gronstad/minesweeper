@@ -1,5 +1,4 @@
 import java.util.*;
-import java.awt.Polygon;
 
 class Rute {
 
@@ -94,8 +93,16 @@ class Rute {
         return tall;
     }
 
-    public Polygon hentPolygon() {
-        return new Polygon(FIGUR.xArr(), FIGUR.yArr(), FIGUR.size());
+    public int[] hentPolygonX() {
+        return FIGUR.xArr();
+    }
+
+    public int[] hentPolygonY() {
+        return FIGUR.yArr();
+    }
+
+    public int hentPolygonS() {
+        return FIGUR.size();
     }
 
     public Collection<Rute> sjekk() {

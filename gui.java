@@ -10,7 +10,6 @@ class View {
     private final JFrame vindu = new JFrame("Minesweeper");
 
     private final JPanel rutePanel = new JPanel();
-    private final JPanel panel = new JPanel(new BorderLayout());
 
     private final JComboBox<String> vansklighetValg = new JComboBox<>(new String[] {"Easy", "Medium", "Diffucalt"});
     private final JComboBox<String> modellValg = new JComboBox<>(new String[] {"Random", "Spiral", "Grid", "Hex"});
@@ -43,6 +42,7 @@ class View {
 
         vindu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(overflateStørrelse);
 
         JPanel toppPanel = new JPanel();
@@ -52,9 +52,10 @@ class View {
         innstillingPanel.setBackground(Color.WHITE);
         innstillingPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 35));
         vansklighetValg.setSelectedIndex(1);
-        vansklighetValg.addActionListener(new ResetAction());
+        ActionListener resetFunksjonalitet = new ResetAction();
+        vansklighetValg.addActionListener(resetFunksjonalitet);
         modellValg.setSelectedIndex(1);
-        modellValg.addActionListener(new ResetAction());
+        modellValg.addActionListener(resetFunksjonalitet);
         innstillingPanel.add(vansklighetValg);
         innstillingPanel.add(modellValg);
         toppPanel.add(innstillingPanel);
@@ -66,7 +67,7 @@ class View {
         forklaringPanel.setBackground(Color.GRAY);
         forklaringPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 50));
         restart.setPreferredSize(new Dimension(45, 45));
-        restart.addActionListener(new ResetAction());
+        restart.addActionListener(resetFunksjonalitet);
         restart.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         gbc.gridx = 0;
         gbc.weightx = 1;
@@ -284,8 +285,7 @@ class View {
             alleKnapper.clear();
             KantKnapp.ANTALL = 0;
             rutePanel.removeAll();
-            //CON.lagRuter(vansklighetValg.getSelectedItem(), modellValg.getSelectedItem());
-            CON.lagRuter();
+            CON.lagRuter(vansklighetValg.getSelectedIndex(), modellValg.getSelectedIndex());
         }
     }
 

@@ -15,13 +15,78 @@ public class Controller {
         lagGuiRuter();
     }
 
-    public void lagRuter() {
+    public void lagRuter(int vansklighetNr, int modellNr) {
         sattUtBomber = false;
-        antMiner = 20;
+        switch (vansklighetNr) {
+            case 0:
+                antMiner = 5;
+                break;
+            case 1:
+                antMiner = 20;
+                break;
+            case 2: 
+                antMiner = 100;
+                break;
+            default:
+                break;
+        }
         Rute.reset();
-        lagRuter(new SpiralModell(150, 500, 500));
+        lagRuter(finnModell(vansklighetNr, modellNr));
         lagGuiRuter();
     }
+
+    private PunktDistribusjon finnModell(int vansklighetNr, int modellNr) {
+        switch (vansklighetNr) {
+            case 0:
+                switch (modellNr) {
+                    case 0:
+                        return new RandomModell(25, 500, 500);
+                    case 1:
+                        return new SpiralModell(25, 500, 500);
+                    case 2: 
+                        return new GridModell(5, 5, 100);
+                    case 3:
+                        return new HexModell(5, 5, 100);
+                }
+            case 1:
+                switch (modellNr) {
+                    case 0:
+                        return new RandomModell(100, 500, 500);
+                    case 1:
+                        return new SpiralModell(100, 500, 500);
+                    case 2: 
+                        return new GridModell(10, 10, 50);
+                    case 3:
+                        return new HexModell(10, 10, 50);
+                }
+            case 2: 
+                switch (modellNr) {
+                    case 0:
+                        return new RandomModell(250, 500, 500);
+                    case 1:
+                        return new SpiralModell(250, 500, 500);
+                    case 2: 
+                        return new GridModell(16, 16, 32);
+                    case 3:
+                        return new HexModell(16, 16, 32);
+                }
+        }
+        throw new IllegalArgumentException("Ikke gyldig modell, eller vansklighet");
+    }
+
+    private PunktDistribusjon finnModell(int modellNr, int... args) {
+        switch (modellNr) {
+            case 0:
+                return new RandomModell(args[0], args[1], args[2]);
+            case 1:
+                return new SpiralModell(args[0], args[1], args[2]);
+            case 2: 
+                return new GridModell(args[0], args[1], args[2]);
+            case 3:
+                return new HexModell(args[0], args[1], args[2]);
+        }
+        throw new IllegalArgumentException("Ikke gyldig modell");
+    } 
 
     private void lagRuter(PunktDistribusjon m) {
         Rutenett fg = new Rutenett(m);

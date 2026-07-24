@@ -184,6 +184,9 @@ class MangeKant extends Kant {
         return S;
     }
 
+    public MangeKant trim(int x0, int y0, int x1, int y1) {
+        
+        return null;
+    }
 
-    
 }

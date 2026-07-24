@@ -3,11 +3,11 @@ import java.awt.Polygon;
 
 public class Controller {
     
-    private List<Rute> alleRuter = new ArrayList<>();
+    private final List<Rute> alleRuter = new ArrayList<>();
     private int antMiner;
     private final View DISPLAY = new View(this);
     private boolean sattUtBomber = false;
-    private final Random RAND = new Random();
+    private static final Random RAND = new Random();
 
     public Controller(PunktDistribusjon m, int antMiner) {
         this.antMiner = antMiner;
@@ -15,9 +15,18 @@ public class Controller {
         lagGuiRuter();
     }
 
+    public void lagRuter() {
+        sattUtBomber = false;
+        antMiner = 20;
+        Rute.reset();
+        lagRuter(new SpiralModell(150, 500, 500));
+        lagGuiRuter();
+    }
+
     private void lagRuter(PunktDistribusjon m) {
         Rutenett fg = new Rutenett(m);
         Collection<MangeKant> poly = fg.finnMangeKant();
+        alleRuter.clear();
         for (MangeKant p: poly) {
             alleRuter.add(new Rute(p));
         }
@@ -64,6 +73,7 @@ public class Controller {
             }
 
             Rute.tellNaboer(alleRuter);
+            DISPLAY.start();
 
         }
 

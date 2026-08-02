@@ -10,14 +10,8 @@ public class Controller {
     private static final Random RAND = new Random();
     private final Collection<Rute> ikkeSjekketNaboer = new HashSet<>();
 
-    public Controller(PunktDistribusjon m, int antMiner) {
-        this.antMiner = antMiner;
-        lagRuter(m);
-        lagGuiRuter();
-    }
-
     public Controller() {
-        lagRuter(1, 1);
+        lagRuter(DISPLAY.hentVansklighetNr(), DISPLAY.hentModellNr());
         lagGuiRuter();
     }
 
@@ -56,13 +50,13 @@ public class Controller {
     private PunktDistribusjon finnModell(int modellNr, int... args) {
         switch (modellNr) {
             case 0:
-                return new RandomModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
+                return new RandomModell(args[0], hentLengde(), hentHøyde(), args[1]);
             case 1:
-                return new SpiralModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
+                return new SpiralModell(args[0], hentLengde(), hentHøyde(), args[1]);
             case 2: 
-                return new GridModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
+                return new GridModell(args[0], hentLengde(), hentHøyde(), args[1]);
             case 3:
-                return new HexModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
+                return new HexModell(args[0], hentLengde(), hentHøyde(), args[1]);
         }
         throw new IllegalArgumentException("Ikke gyldig modell");
     } 
@@ -86,7 +80,7 @@ public class Controller {
     private void lagGuiRuter() {
         for (int i = 0; i < alleRuter.size(); i++) {
             Rute r = alleRuter.get(i);
-            DISPLAY.leggTilKnapp(hentPolygon(r), r.hentSenterX(), r.hentSenterY());
+            DISPLAY.leggTilKnapp(hentPolygon(r), r.hentSenterX(hentLengde()), r.hentSenterY(hentHøyde()));
         }
         DISPLAY.lagtTilKnapper();
         DISPLAY.restart(antMiner);
@@ -168,6 +162,14 @@ public class Controller {
 
     public boolean erFlagget(int nr) {
         return alleRuter.get(nr).flagg();
+    }
+
+    public int hentLengde() {
+        return DISPLAY.hentLengde();
+    }
+
+    public int hentHøyde() {
+        return DISPLAY.hentHøyde();
     }
     
 }

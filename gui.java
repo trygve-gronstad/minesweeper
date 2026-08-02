@@ -55,7 +55,7 @@ class View {
         vansklighetValg.setSelectedIndex(1);
         ActionListener resetFunksjonalitet = new ResetAction();
         vansklighetValg.addActionListener(resetFunksjonalitet);
-        modellValg.setSelectedIndex(1);
+        modellValg.setSelectedIndex(0);
         modellValg.addActionListener(resetFunksjonalitet);
         innstillingPanel.add(vansklighetValg);
         innstillingPanel.add(modellValg);
@@ -67,9 +67,6 @@ class View {
         gbc.weighty = 1;
         forklaringPanel.setBackground(GRÅ);
         forklaringPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 50));
-        restart.setPreferredSize(new Dimension(45, 45));
-        restart.addActionListener(resetFunksjonalitet);
-        restart.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
         gbc.gridx = 0;
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
@@ -114,11 +111,12 @@ class View {
 
     public void start() {
         sekKlokke.start();
+        kanFlagge = true;
     }
 
     public void restart(int antBomber) {
-        antFlagg.setText(String.format("%d 🚩", antBomber));
-        tid.setText("tid: 0");
+        antFlagg.setText(String.format(" %d 🚩", antBomber));
+        tid.setText("tid: 0 ");
         sekKlokke = new Thread(new VenteTråd(1000));
         flagg = antBomber;
         restart.settVanlig();
@@ -146,13 +144,7 @@ class View {
     }
 
     public void markerKnapp(int indeks, boolean marker) {
-        KantKnapp k = alleKnapper.get(indeks);
-        if (marker) {
-            k.setBackground(Color.RED);
-        }
-        else {
-            k.setBackground(null);
-        }
+        alleKnapper.get(indeks).marker(marker);;
     }
 
     public int hentLengde() {
@@ -161,6 +153,14 @@ class View {
 
     public int hentHøyde() {
         return rutePanel.getHeight();
+    }
+
+    public int hentVansklighetNr() {
+        return vansklighetValg.getSelectedIndex();
+    }
+
+    public int hentModellNr() {
+        return modellValg.getSelectedIndex();
     }
 
     private class KantKnapp extends JButton {
@@ -185,10 +185,10 @@ class View {
 
             Rectangle omkrets = polygon.getBounds();
             setBounds(
-                omkrets.x - 25,
-                omkrets.y - 25,
-                omkrets.width + 50,
-                omkrets.height + 50
+                omkrets.x - 50,
+                omkrets.y - 50,
+                omkrets.width + 100,
+                omkrets.height + 100
             );
             //setFont(FONT);
 
@@ -199,30 +199,81 @@ class View {
             this.tekstX = tekstX;
             this.tekstY = tekstY;
 
-            addMouseListener(new MouseAdapter(){
+            MouseAdapter mus = new MouseAdapter(){
+                KantKnapp forrige;
+                boolean flagger = false;
+
                 @Override
                 public void mousePressed(MouseEvent e) {
                     if (!kanSpille) return;
 
                     if (SwingUtilities.isLeftMouseButton(e)) {
-                        CON.trykkKnapp(indeks);
+                        if (sjult) marker(true);
+                        restart.settAventende();
                     } 
                     else if (SwingUtilities.isRightMouseButton(e)) {
                         if (sjult) {
-                            if (CON.byttFlagg(indeks)) {
-                                setText("🚩");
-                                flagg--;
+                            if (kanFlagge) {
+                                if (CON.byttFlagg(indeks)) {
+                                    setText("🚩");
+                                    flagg--;
+                                }
+                                else {
+                                    setText("");
+                                    flagg++;
+                                }
+                                antFlagg.setText(String.format(" %d 🚩", flagg));
+                                repaint();
                             }
-                            else {
-                                setText("");
-                                flagg++;
-                            }
-                            antFlagg.setText(String.format("%d 🚩", flagg));
-                            repaint();
+                            flagger = true;
+                        }
+                        else if (!flagger) {
+                            CON.markerNaboer(indeks);
                         }
                     }
+                    forrige = finnKnappUnderPeker(e);
                 }
-            });
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    if (!kanSpille) return;
+                    
+                    KantKnapp ny = finnKnappUnderPeker(e);
+                    if (ny == null || ny == forrige) return;
+
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        if (forrige.sjult) forrige.marker(false);
+                        if (ny.sjult) ny.marker(true);
+                    } 
+                    else if (SwingUtilities.isRightMouseButton(e) && !flagger) {
+                        CON.fjernMarkering();
+                        CON.markerNaboer(ny.indeks);
+                    }
+                    forrige = ny;
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    if (!kanSpille) return;
+
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        restart.settVanlig();
+                        if (forrige.sjult) forrige.marker(false);
+                        CON.trykkKnapp(forrige.indeks);
+                    } 
+                    else if (SwingUtilities.isRightMouseButton(e)) {
+                        CON.fjernMarkering();
+                    }
+                    flagger = false;
+                }
+            };
+            addMouseListener(mus);
+            addMouseMotionListener(mus);
+        }
+
+        public void marker(boolean visOmkrets) {
+            this.visOmkrets = visOmkrets;
+            repaint();
         }
 
         private KantKnapp finnKnappUnderPeker(MouseEvent e) {
@@ -239,6 +290,8 @@ class View {
 
         @Override
         protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -261,14 +314,12 @@ class View {
             g2.setColor(Color.DARK_GRAY);
             g2.drawPolygon(polygon);
 
-            g2.translate(getX(), getY());
-
-            super.paintComponent(g);
-
             if (tekst != null) {
-                g2.setColor(Color.DARK_GRAY);
+                g2.setColor(getForeground());
                 g2.drawString(tekst, tekstX, tekstY);
             }
+
+            g2.translate(getX(), getY());
         }
 
         @Override
@@ -338,7 +389,7 @@ class View {
             try {
                 while (true) {
                     Thread.sleep(dt);
-                    tid.setText(String.format("tid: %d", ++t));
+                    tid.setText(String.format("tid: %d ", ++t));
                 }
             }
             catch (InterruptedException e) {}
@@ -359,6 +410,10 @@ class View {
         private static String glad = "😎";
 
         public ResetKnapp() {
+            setFont(new Font("Dialog", Font.BOLD, 30));
+            setPreferredSize(new Dimension(45, 45));
+            setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+
             addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

@@ -65,7 +65,7 @@ class GridModell implements PunktDistribusjon {
         double forhold = ((double) tilgjenligBredde)/(høyde - avstand2);
         double rot = Math.sqrt(antall / forhold);
         rad = Math.max(1, (int) Math.round(rot));
-        kol = (int) Math.ceil((double) antall / this.rad);
+        kol = (int) Math.round((double) antall / this.rad);
         delta = tilgjenligBredde / kol;
         this.avstand = avstand;
     }

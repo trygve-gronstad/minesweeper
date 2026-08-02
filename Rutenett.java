@@ -159,7 +159,10 @@ class Rutenett {
         Map<Punkt, Collection<Trekant>> map = sammenhengendeTreknaterPunkt(trekanter, superTrekant);
         Collection<MangeKant> figur = new HashSet<>();
         for (Punkt p: map.keySet()) {
-            figur.add(MangeKant.newMangeKant(p, map.get(p)));
+            MangeKant m = MangeKant.newMangeKant(p, map.get(p));
+            if (m != null) {
+                figur.add(m);
+            }
         }
         return figur;
     }

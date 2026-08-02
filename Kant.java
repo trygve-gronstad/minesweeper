@@ -168,11 +168,10 @@ class MangeKant extends Kant {
 
         int i = 0;
         for (Trekant t: trekanter) {
-            punkter[i++] = t.hentSentrum();
+            punkter[i++] = t.hentSentrum(); //kan kanskje sjekke for om punktene blir null her, men det løser ikke alle problemene fortsatt...
         }
 
-        Arrays.sort(punkter, 0, i, (p1, p2) -> { //ai
-            if (p == null) {System.out.println("null");}
+        Arrays.sort(punkter, (p1, p2) -> { //ai
             double vinkel1 = Math.atan2(p1.y - p.y, p1.x - p.x);
             double vinkel2 = Math.atan2(p2.y - p.y, p2.x - p.x);
             return Double.compare(vinkel1, vinkel2);
@@ -185,9 +184,14 @@ class MangeKant extends Kant {
         return S;
     }
 
-    public MangeKant trim(int x0, int y0, int x1, int y1) {
-        
-        return null;
+    public Punkt hentSentrum(int x0, int y0, int x1, int y1) {
+        double x = 0;
+        double y = 0;
+        for (Punkt p: P) {
+            x += Math.max(x0, Math.min(p.x, x1));
+            y += Math.max(y0, Math.min(p.y, y1));
+        }
+        return new Punkt(x/size(), y/size());
     }
 
 }

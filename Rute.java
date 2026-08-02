@@ -111,12 +111,12 @@ class Rute {
         return r;
     }
 
-    public int hentSenterX() {
-        return (int) FIGUR.hentSentrum().x;
+    public int hentSenterX(int lengde) {
+        return (int) FIGUR.hentSentrum(0, 0, lengde, 0).x;
     }
 
-    public int hentSenterY() {
-        return (int) FIGUR.hentSentrum().y;
+    public int hentSenterY(int høyde) {
+        return (int) FIGUR.hentSentrum(0, 0, 0, høyde).y;
     }
 
     public boolean utvidetSjekk(Collection<Rute> retur) {

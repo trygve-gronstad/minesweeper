@@ -171,7 +171,8 @@ class MangeKant extends Kant {
             punkter[i++] = t.hentSentrum();
         }
 
-        Arrays.sort(punkter, (p1, p2) -> { //ai
+        Arrays.sort(punkter, 0, i, (p1, p2) -> { //ai
+            if (p == null) {System.out.println("null");}
             double vinkel1 = Math.atan2(p1.y - p.y, p1.x - p.x);
             double vinkel2 = Math.atan2(p2.y - p.y, p2.x - p.x);
             return Double.compare(vinkel1, vinkel2);

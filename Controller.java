@@ -8,10 +8,16 @@ public class Controller {
     private final View DISPLAY = new View(this);
     private boolean sattUtBomber = false;
     private static final Random RAND = new Random();
+    private final Collection<Rute> ikkeSjekketNaboer = new HashSet<>();
 
     public Controller(PunktDistribusjon m, int antMiner) {
         this.antMiner = antMiner;
         lagRuter(m);
+        lagGuiRuter();
+    }
+
+    public Controller() {
+        lagRuter(1, 1);
         lagGuiRuter();
     }
 
@@ -38,38 +44,11 @@ public class Controller {
     private PunktDistribusjon finnModell(int vansklighetNr, int modellNr) {
         switch (vansklighetNr) {
             case 0:
-                switch (modellNr) {
-                    case 0:
-                        return new RandomModell(25, 500, 500);
-                    case 1:
-                        return new SpiralModell(25, 500, 500);
-                    case 2: 
-                        return new GridModell(5, 5, 100);
-                    case 3:
-                        return new HexModell(5, 5, 100);
-                }
+                return finnModell(modellNr, 25, 50);
             case 1:
-                switch (modellNr) {
-                    case 0:
-                        return new RandomModell(100, 500, 500);
-                    case 1:
-                        return new SpiralModell(100, 500, 500);
-                    case 2: 
-                        return new GridModell(10, 10, 50);
-                    case 3:
-                        return new HexModell(10, 10, 50);
-                }
+                return finnModell(modellNr, 100, 50);
             case 2: 
-                switch (modellNr) {
-                    case 0:
-                        return new RandomModell(250, 500, 500);
-                    case 1:
-                        return new SpiralModell(250, 500, 500);
-                    case 2: 
-                        return new GridModell(16, 16, 32);
-                    case 3:
-                        return new HexModell(16, 16, 32);
-                }
+                return finnModell(modellNr, 250, 50);
         }
         throw new IllegalArgumentException("Ikke gyldig modell, eller vansklighet");
     }
@@ -77,13 +56,13 @@ public class Controller {
     private PunktDistribusjon finnModell(int modellNr, int... args) {
         switch (modellNr) {
             case 0:
-                return new RandomModell(args[0], args[1], args[2]);
+                return new RandomModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
             case 1:
-                return new SpiralModell(args[0], args[1], args[2]);
+                return new SpiralModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
             case 2: 
-                return new GridModell(args[0], args[1], args[2]);
+                return new GridModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
             case 3:
-                return new HexModell(args[0], args[1], args[2]);
+                return new HexModell(args[0], DISPLAY.hentLengde(), DISPLAY.hentHøyde(), args[1]);
         }
         throw new IllegalArgumentException("Ikke gyldig modell");
     } 
@@ -160,6 +139,35 @@ public class Controller {
 
     public int hentForklaring(int nr) {
         return alleRuter.get(nr).hentTall();
+    }
+
+    public void markerNaboer(int nr) {
+        Rute r = alleRuter.get(nr);
+        for (Rute nabo: r.hentNaboer()) {
+            if (!nabo.erSjekket()) {
+                ikkeSjekketNaboer.add(nabo);
+            }
+        }
+        marker(true);
+    }
+
+    public void fjernMarkering() {
+        marker(false);
+        ikkeSjekketNaboer.clear();
+    }
+
+    private void marker(boolean x) {
+        for (Rute nabo: ikkeSjekketNaboer) {
+            DISPLAY.markerKnapp(nabo.hentIndeks(), x);
+        }
+    }
+
+    public boolean erSjekket(int nr) {
+        return alleRuter.get(nr).erSjekket();
+    }
+
+    public boolean erFlagget(int nr) {
+        return alleRuter.get(nr).flagg();
     }
     
 }

@@ -10,10 +10,6 @@ class Rutenett {
         maks = Punkt.max(allePunkter);
     }
 
-    public Rutenett(int antall, int bredde, int høyde) {
-        this(new RandomModell(antall, bredde, høyde));
-    }
-
     public double maksX() {
         return maks.x;
     }

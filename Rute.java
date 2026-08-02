@@ -165,4 +165,8 @@ class Rute {
         return false;
     }
 
+    public boolean erSjekket() {
+        return sjekket;
+    }
+
 }

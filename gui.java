@@ -16,14 +16,15 @@ class View {
 
     private final JLabel antFlagg = new JLabel();
     private final JLabel tid = new JLabel();
-    private final JButton restart = new JButton("😊");
+    private final ResetKnapp restart = new ResetKnapp();
 
     private final Controller CON;
     private final List<KantKnapp> alleKnapper = new ArrayList<>();
     private Dimension overflateStørrelse = new Dimension(1000, 800);
     private int flagg = 0;
     private Thread sekKlokke;
-    private boolean kanSpille = false;
+    private boolean kanSpille, kanFlagge;
+    private final static Color GRÅ = new Color(170, 170, 170);
 
     public View(Controller c) {
         CON = c;
@@ -64,11 +65,11 @@ class View {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
         gbc.weighty = 1;
-        forklaringPanel.setBackground(Color.GRAY);
+        forklaringPanel.setBackground(GRÅ);
         forklaringPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 50));
         restart.setPreferredSize(new Dimension(45, 45));
         restart.addActionListener(resetFunksjonalitet);
-        restart.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        restart.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
         gbc.gridx = 0;
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
@@ -81,7 +82,7 @@ class View {
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.EAST;
         forklaringPanel.add(tid, gbc);
-        forklaringPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        forklaringPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
         toppPanel.add(forklaringPanel);
 
         panel.add(toppPanel, BorderLayout.NORTH);
@@ -120,20 +121,18 @@ class View {
         tid.setText("tid: 0");
         sekKlokke = new Thread(new VenteTråd(1000));
         flagg = antBomber;
-        restart.setText("😊");
-        restart.setBackground(null);
+        restart.settVanlig();
+        kanFlagge = false;
         kanSpille = true;
     }
 
     public void slutt(boolean vunnet) {
         kanSpille = false;
         if (vunnet) {
-            restart.setText("😎");
-            restart.setBackground(Color.GREEN);
+            restart.settVunnet();
         }
         else {
-            restart.setText("😵");
-            restart.setBackground(Color.RED);
+            restart.settTap();
         }
         sekKlokke.interrupt();
     }
@@ -146,22 +145,51 @@ class View {
         return overflateStørrelse;
     }
 
+    public void markerKnapp(int indeks, boolean marker) {
+        KantKnapp k = alleKnapper.get(indeks);
+        if (marker) {
+            k.setBackground(Color.RED);
+        }
+        else {
+            k.setBackground(null);
+        }
+    }
+
+    public int hentLengde() {
+        return rutePanel.getWidth();
+    }
+
+    public int hentHøyde() {
+        return rutePanel.getHeight();
+    }
+
     private class KantKnapp extends JButton {
 
         private static int ANTALL = 0;
         private static final Font FONT = new Font("Display", Font.BOLD, 15);
-        private static final Color[] FARGER = new Color[] {Color.BLUE, Color.GREEN, Color.RED, Color.MAGENTA, Color.ORANGE, Color.CYAN, Color.BLACK, Color.WHITE};
-
+        private static final Color[] FARGER = new Color[] {Color.BLUE, new Color(0, 126, 0), Color.RED, new Color(178, 0, 255), new Color(255, 216, 0), new Color(3, 127, 127), new Color(137, 82, 0), Color.WHITE};
+       
         private final Polygon polygon;
         //private final Area omeråde;
         private final int indeks, tekstX, tekstY;
         private boolean sjult = true;
+        private String tekst;
+        private boolean visOmkrets = false;
 
         public KantKnapp(Polygon polygon, int tekstX, int tekstY) {
             setContentAreaFilled(false);
             setFocusPainted(false);
             setBorderPainted(false);
-            setBounds(polygon.getBounds());
+            setBackground(Color.LIGHT_GRAY);
+            setForeground(Color.DARK_GRAY);
+
+            Rectangle omkrets = polygon.getBounds();
+            setBounds(
+                omkrets.x - 25,
+                omkrets.y - 25,
+                omkrets.width + 50,
+                omkrets.height + 50
+            );
             //setFont(FONT);
 
             this.polygon = polygon;
@@ -174,27 +202,39 @@ class View {
             addMouseListener(new MouseAdapter(){
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (kanSpille) {
-                        if (SwingUtilities.isLeftMouseButton(e)) {
-                            CON.trykkKnapp(indeks);
-                        } 
-                        else if (SwingUtilities.isRightMouseButton(e)) {
-                            if (sjult) {
-                                if (CON.byttFlagg(indeks)) {
-                                    setText("🚩");
-                                    flagg--;
-                                }
-                                else {
-                                    setText("");
-                                    flagg++;
-                                }
-                                antFlagg.setText(String.format("%d 🚩", flagg));
-                                repaint();
+                    if (!kanSpille) return;
+
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        CON.trykkKnapp(indeks);
+                    } 
+                    else if (SwingUtilities.isRightMouseButton(e)) {
+                        if (sjult) {
+                            if (CON.byttFlagg(indeks)) {
+                                setText("🚩");
+                                flagg--;
                             }
+                            else {
+                                setText("");
+                                flagg++;
+                            }
+                            antFlagg.setText(String.format("%d 🚩", flagg));
+                            repaint();
                         }
                     }
                 }
             });
+        }
+
+        private KantKnapp finnKnappUnderPeker(MouseEvent e) {
+            Component startKilde = e.getComponent();
+            Container rutenett = startKilde.getParent();
+            Point punktIRutenett = SwingUtilities.convertPoint(startKilde, e.getPoint(), rutenett);
+            Component treff = rutenett.getComponentAt(punktIRutenett);
+
+            if (treff instanceof KantKnapp) {
+                return (KantKnapp) treff;
+            }
+            return null;
         }
 
         @Override
@@ -202,31 +242,33 @@ class View {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            if (!sjult) {
-                g2.setColor(Color.GRAY);
-            } else {
-                g2.setColor(Color.LIGHT_GRAY);
-            }
             g2.translate(-getX(), -getY());
+
+            g2.setColor(getBackground());
             g2.fillPolygon(polygon); //g2.fill(omeråde);
 
-            g2.setColor(Color.BLACK);
-            g2.drawPolygon(polygon); //g2.draw(omeråde);
+            if (visOmkrets) {
+                Shape omeråde = g2.getClip();
+                g2.clip(polygon);
+
+                g2.setStroke(new BasicStroke(5));
+                g2.setColor(getForeground());
+                g2.drawPolygon(polygon);
+
+                g2.setStroke(new BasicStroke(2));
+                g2.clip(omeråde);
+            }
+            g2.setColor(Color.DARK_GRAY);
+            g2.drawPolygon(polygon);
 
             g2.translate(getX(), getY());
 
-            // String tekst = getText();
-            // if (tekst != null) {
-            //     g2.drawString(tekst, tekstX, tekstY);
-            // }
             super.paintComponent(g);
-        }
 
-        @Override
-        protected void paintBorder(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.BLACK);
+            if (tekst != null) {
+                g2.setColor(Color.DARK_GRAY);
+                g2.drawString(tekst, tekstX, tekstY);
+            }
         }
 
         @Override
@@ -243,6 +285,7 @@ class View {
             if (x > 0) {
                 int i = Math.min(7, x-1);
                 setForeground(FARGER[i]);
+                visOmkrets = true;
                 return String.valueOf(x);
             }
 
@@ -252,8 +295,33 @@ class View {
 
         public void vis() {
             sjult = false;
+            setBackground(GRÅ);
             setText(hentTekst());
             repaint();
+        }
+
+        @Override
+        public void setText(String s) {
+            tekst = s;
+        }
+
+        @Override
+        public String getText() {
+            return tekst;
+        }
+
+        @Override
+        public void setBackground(Color bg) {
+            if (bg == null) {
+                if (!sjult) {
+                    super.setBackground(GRÅ);
+                } else {
+                    super.setBackground(Color.LIGHT_GRAY);
+                }
+            }
+            else {
+                super.setBackground(bg);
+            }
         }
     }
 
@@ -280,6 +348,42 @@ class View {
     private class ResetAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            restart.resett();
+        }
+    }
+
+    private class ResetKnapp extends JButton {
+        private static String vanlig = "😊";
+        private static String overrasket = "😮";
+        private static String dø = "😵";
+        private static String glad = "😎";
+
+        public ResetKnapp() {
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    resett();
+                }
+            });
+        }
+
+        public void settVanlig() {
+            markerRestert(vanlig, null);
+        }
+
+        public void settAventende() {
+            markerRestert(overrasket, Color.YELLOW);
+        }
+
+        public void settTap() {
+            markerRestert(dø, Color.RED);
+        }
+
+        public void settVunnet() {
+            markerRestert(glad, Color.GREEN);
+        }
+
+        public void resett() {
             kanSpille = false;
             sekKlokke.interrupt();
             alleKnapper.clear();
@@ -287,6 +391,12 @@ class View {
             rutePanel.removeAll();
             CON.lagRuter(vansklighetValg.getSelectedIndex(), modellValg.getSelectedIndex());
         }
+
+        private void markerRestert(String emoji, Color c) {
+            restart.setText(emoji);
+            restart.setBackground(c);
+        }
+
     }
 
 }

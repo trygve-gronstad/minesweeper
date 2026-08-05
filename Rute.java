@@ -2,37 +2,29 @@ import java.util.*;
 
 class Rute {
 
-    private static final Map<Punkt, Collection<Rute>> SAMMENHENGENDE = new HashMap<>();
-    private static int antall = 0;
-    private static int antSjekket = 0;
-
     private final Collection<Rute> naboer = new HashSet<>();
     private final MangeKant FIGUR;
     private boolean bombe, flagget, sjekket;
     private int tall = -1;
-    private final int indeks = antall++;
+    private final int indeks;
     
-    public Rute(MangeKant poly) {
+    public Rute(MangeKant poly, int indeks) {
         FIGUR = poly;
-        leggTil(poly);
         bombe = false;
         flagget = sjekket = false;
+        this.indeks = indeks;
     }
 
-    public static void reset() {
-        SAMMENHENGENDE.clear();
-        antall = antSjekket = 0;
-    }
+    public static void settNaboer(Collection<Rute> ruter) {
+        Map<Punkt, Collection<Rute>> map = new HashMap<>();
+        for (Rute r: ruter) {
+            leggTil(r, map);
+        }
 
-    public static boolean vunnet(int antBomber) {
-        return antall - antSjekket == antBomber;
-    }
-
-    public static void settNaboer() {
-        for (Punkt p: SAMMENHENGENDE.keySet()) {
-            Collection<Rute> ruter = SAMMENHENGENDE.get(p);
-            for (Rute nabo: ruter) {
-                nabo.leggTilNabo(ruter);
+        for (Punkt p: map.keySet()) {
+            Collection<Rute> sammenhengendeRuter = map.get(p);
+            for (Rute nabo: sammenhengendeRuter) {
+                nabo.leggTilNabo(sammenhengendeRuter);
             }
         }
     }
@@ -54,9 +46,9 @@ class Rute {
         bombe = true;
     }
 
-    private void leggTil(MangeKant poly) {
-        for (Punkt p: poly.hentPunkter()) {
-            SAMMENHENGENDE.computeIfAbsent(p, k -> new HashSet<>()).add(this);
+    private static void leggTil(Rute r, Map<Punkt, Collection<Rute>> map) {
+        for (Punkt p: r.FIGUR.hentPunkter()) {
+            map.computeIfAbsent(p, k -> new HashSet<>()).add(r);
         }
     }
 
@@ -148,7 +140,6 @@ class Rute {
 
         sjekket = true;
         retur.add(this);
-        antSjekket++;
 
         if (bombe) {
             return true;

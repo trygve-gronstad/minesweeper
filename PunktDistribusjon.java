@@ -7,7 +7,7 @@ interface PunktDistribusjon{
 
 class RandomModell implements PunktDistribusjon {
 
-    private static final Random RAND = new Random();
+    protected static final Random RAND = new Random();
     protected final int høyde, bredde, ant, avstand;
 
     public RandomModell(int antall, int bredde, int høyde, int avstand) {
@@ -86,15 +86,17 @@ class GridModell implements PunktDistribusjon {
 class SpiralModell extends RandomModell {
 
     private final double vinkel;
-    public static final double GYLENDESNITT = (1 + Math.sqrt(5)) / 2 ;
+    public static final double GYLENDESNITT = (1 + Math.sqrt(5)) / 2;
+    public static final double GYLENDEVINKEL = 2 * Math.PI * (1 - 1 / GYLENDESNITT);
+    private static final double[] FINE_VINKLER = {130.1, 130.2, 130.3, 130.4, 130.5, 130.6, 131.3, 131.4, 131.5, 131.6, 131.7, 131.8, 131.9, 132.1, 132.2, 132.3, 132.4, 132.5, 132.9, 133.0, 133.1, 133.2, 133.5, 133.6, 133.8, 133.9, 134.0, 134.1, 134.2, 134.3, 134.4, 134.5, 135.8, 135.9, 136.0, 136.1, 136.3, 136.4, 136.7, 136.9, 137.4, 137.5, 137.8, 138.0, 138.1, 138.8, 138.9, 139.0, 139.1, 139.2, 139.5, 139.7};
 
     public SpiralModell(int antall, int lengde, int bredde, int avstand) {
-        this(antall, lengde, bredde, avstand, GYLENDESNITT);
+        this(antall, lengde, bredde, avstand, FINE_VINKLER[RAND.nextInt(FINE_VINKLER.length)]);
     }
 
-    public SpiralModell(int antall, int bredde, int høyde, int avstand, double snitt) {
+    public SpiralModell(int antall, int bredde, int høyde, int avstand, double vinkel) {
         super(antall, bredde, høyde, avstand);
-        vinkel = 2 * Math.PI * (1 - 1 / snitt);
+        this.vinkel = vinkel;
     }
 
     @Override

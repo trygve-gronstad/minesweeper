@@ -131,6 +131,7 @@ class View {
         }
         else {
             restart.settTap();
+            //CON.markerFeil();
         }
         sekKlokke.interrupt();
     }

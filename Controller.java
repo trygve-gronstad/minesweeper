@@ -4,7 +4,7 @@ import java.awt.Polygon;
 public class Controller {
     
     private final List<Rute> alleRuter = new ArrayList<>();
-    private int antMiner;
+    private int antMiner, antallRuter, antallSjekket;
     private final View DISPLAY = new View(this);
     private boolean sattUtBomber = false;
     private static final Random RAND = new Random();
@@ -17,6 +17,7 @@ public class Controller {
 
     public void lagRuter(int vansklighetNr, int modellNr) {
         sattUtBomber = false;
+        antallRuter = antallSjekket = 0;
         switch (vansklighetNr) {
             case 0:
                 antMiner = 5;
@@ -30,7 +31,6 @@ public class Controller {
             default:
                 break;
         }
-        Rute.reset();
         lagRuter(finnModell(vansklighetNr, modellNr));
         lagGuiRuter();
     }
@@ -62,14 +62,14 @@ public class Controller {
     } 
 
     private void lagRuter(PunktDistribusjon m) {
-        Rutenett fg = new Rutenett(m);
+        Rutenett fg = new Rutenett(m, hentLengde(), hentHøyde());
         Collection<MangeKant> poly = fg.finnMangeKant();
         alleRuter.clear();
         for (MangeKant p: poly) {
-            alleRuter.add(new Rute(p));
+            alleRuter.add(new Rute(p, antallRuter++));
         }
 
-        Rute.settNaboer();
+        Rute.settNaboer(alleRuter);
         sattUtBomber = false;
     }
 
@@ -116,10 +116,12 @@ public class Controller {
         }
 
         Collection<Rute> sjekket = new HashSet<>();
-        if (alleRuter.get(nr).utvidetSjekk(sjekket)) {
+        boolean tapt = alleRuter.get(nr).utvidetSjekk(sjekket);
+        antallSjekket += sjekket.size();
+        if (tapt) {
             DISPLAY.slutt(false);
         }
-        else if (Rute.vunnet(antMiner)) {
+        else if (vunnet()) {
             DISPLAY.slutt(true);
         }
         for (Rute r: sjekket) {
@@ -170,6 +172,10 @@ public class Controller {
 
     public int hentHøyde() {
         return DISPLAY.hentHøyde();
+    }
+
+    public boolean vunnet() {
+        return antallRuter - antallSjekket == antMiner;
     }
     
 }

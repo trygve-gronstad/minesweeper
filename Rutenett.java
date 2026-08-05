@@ -3,23 +3,22 @@ import java.util.*;
 class Rutenett {
 
     private final Punkt[] allePunkter;
-    private final Punkt maks;
-    
+    private final int maksX, maksY;
+
     public Rutenett(PunktDistribusjon modell) {
         allePunkter = modell.finnPunkter();
-        maks = Punkt.max(allePunkter);
+        this.maksX = Integer.MAX_VALUE/4; //må dele på noe sånn at man kan gang, i newSuperTrekant(). denne metoden er ikke meningen å brukes annet enn for testprogram
+        this.maksY = Integer.MAX_VALUE/4;
     }
 
-    public double maksX() {
-        return maks.x;
-    }
-
-    public double maksY() {
-        return maks.y;
+    public Rutenett(PunktDistribusjon modell, int maksX, int maksY) {
+        allePunkter = modell.finnPunkter();
+        this.maksX = maksX;
+        this.maksY = maksY;
     }
 
     private Trekant newSuperTrekant() {
-        return new Trekant(new Punkt(-3 * maks.x, -maks.y), new Punkt(3 * maks.x, -maks.y), new Punkt(0, 3 * maks.y));
+        return new Trekant(new Punkt(-3 * maksX, -maksY), new Punkt(3 * maksX, -maksY), new Punkt(0, 3 * maksY));
     }
 
     public Collection<Trekant> finnTrekanter() {
@@ -159,9 +158,9 @@ class Rutenett {
         Map<Punkt, Collection<Trekant>> map = sammenhengendeTreknaterPunkt(trekanter, superTrekant);
         Collection<MangeKant> figur = new HashSet<>();
         for (Punkt p: map.keySet()) {
-            MangeKant m = MangeKant.newMangeKant(p, map.get(p));
+            MangeKant m = new MangeKant(p, map.get(p));
             if (m != null) {
-                figur.add(m);
+                figur.add(m.clip(0, 0, maksX, maksY));
             }
         }
         return figur;

@@ -1,7 +1,17 @@
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 class Punkt implements Comparable<Punkt> {
     
     public final double x;
     public final double y;
+
+    public static final int TOP = 8;
+    public static final int VENSTERE = 1;
+    public static final int HØYRE = 2;
+    public static final int NEDE = 4;
+    public static final int MIDTEN = 0;
 
     public Punkt(double x, double y) {
         this.x = x;
@@ -14,7 +24,9 @@ class Punkt implements Comparable<Punkt> {
 
     @Override
     public String toString() {
-        return String.format("(%.0f, %.0f)", x, y);
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+        DecimalFormat df = new DecimalFormat("#.########", symbols);
+        return String.format("(%s, %s)", df.format(x), df.format(y));
     }
 
     @Override
@@ -40,6 +52,14 @@ class Punkt implements Comparable<Punkt> {
 
     public Punkt addisjon(Punkt p) {
         return new Punkt(x + p.x, y + p.y);
+    }
+
+    public Punkt subtraksjon(double i) {
+        return new Punkt(x - i, y - i);
+    }
+
+    public Punkt subtraksjon(Punkt p) {
+        return new Punkt(x - p.x, y - p.y);
     }
 
     public Punkt neg() {
@@ -141,6 +161,25 @@ class Punkt implements Comparable<Punkt> {
         }
 
         return retur;
+    }
+
+    public int innenfor(int x0, int y0, int x1, int y1) {
+        int kode = MIDTEN;
+        if (x < x0) {
+            kode |= VENSTERE;
+        }
+        else if (x > x1) {
+            kode |= HØYRE;
+        }
+
+        if (y < y0) {
+            kode |= NEDE;
+        }
+        else if (y > y1) {
+            kode |= TOP;
+        }
+
+        return kode;
     }
 
 }

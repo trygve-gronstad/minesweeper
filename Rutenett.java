@@ -7,14 +7,8 @@ class Rutenett {
 
     public Rutenett(PunktDistribusjon modell) {
         allePunkter = modell.finnPunkter();
-        this.maksX = Integer.MAX_VALUE/4; //må dele på noe sånn at man kan gang, i newSuperTrekant(). denne metoden er ikke meningen å brukes annet enn for testprogram
-        this.maksY = Integer.MAX_VALUE/4;
-    }
-
-    public Rutenett(PunktDistribusjon modell, int maksX, int maksY) {
-        allePunkter = modell.finnPunkter();
-        this.maksX = maksX;
-        this.maksY = maksY;
+        this.maksX = modell.hentBredde();
+        this.maksY = modell.hentHøyde();
     }
 
     private Trekant newSuperTrekant() {

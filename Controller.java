@@ -1,8 +1,11 @@
 import java.util.*;
 import java.awt.Polygon;
+import java.io.FileNotFoundException;
+import java.io.File;
 
 public class Controller {
     
+    private Map<String, String[]> tekst = lesFil("assets/english.txt");
     private final List<Rute> alleRuter = new ArrayList<>();
     private int antMiner, antallRuter, antallSjekket;
     private final View DISPLAY = new View(this);
@@ -31,7 +34,9 @@ public class Controller {
             default:
                 break;
         }
-        lagRuter(finnModell(vansklighetNr, modellNr));
+        PunktDistribusjon m = finnModell(vansklighetNr, modellNr);
+        lagRuter(m);
+        DISPLAY.setAvstand(m.estimertAvstand());
         lagGuiRuter();
     }
 
@@ -62,7 +67,7 @@ public class Controller {
     } 
 
     private void lagRuter(PunktDistribusjon m) {
-        Rutenett fg = new Rutenett(m, hentLengde(), hentHøyde());
+        Rutenett fg = new Rutenett(m);
         Collection<MangeKant> poly = fg.finnMangeKant();
         alleRuter.clear();
         for (MangeKant p: poly) {
@@ -176,6 +181,60 @@ public class Controller {
 
     public boolean vunnet() {
         return antallRuter - antallSjekket == antMiner;
+    }
+
+    public void sjekkFeil() {
+        for (Rute r: alleRuter) {
+            if (r.harBombe() && !r.harFlagg()) {
+                DISPLAY.ikkeFlagget(r.hentIndeks());
+            }
+            else if (!r.harBombe() && r.harFlagg()) {
+                DISPLAY.feilFlagget(r.hentIndeks());
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i: new int[] {hentLengde(), hentHøyde(), DISPLAY.hentVansklighetNr(), DISPLAY.hentModellNr(), DISPLAY.hentTid()}) {
+            sb.append(i);
+            sb.append(",");
+        }
+        
+        sb.append("[");
+        for (Rute r: alleRuter) {
+            sb.append(r);
+            sb.append(",");
+        }
+        sb.delete(sb.length() - 1, sb.length());
+        sb.append("]");
+
+
+        return sb.toString();
+    }
+
+    private static Map<String, String[]> lesFil(String filnavn) {
+        Map<String, String[]> map = new HashMap<>();
+
+        try {
+            Scanner sc = new Scanner(new File(filnavn));
+            while(sc.hasNextLine()) {
+                String linje = sc.nextLine();
+                String[] args = linje.split("=");
+                map.put(args[0], args[1].split(";"));
+            }
+            sc.close();
+        }
+        catch (FileNotFoundException e) {
+            System.exit(1);
+        }
+        return map;
+    }
+
+    public String[] hentTekst(String s) {
+        return tekst.get(s);
     }
     
 }

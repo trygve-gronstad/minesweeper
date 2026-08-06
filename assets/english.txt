@@ -1,0 +1,3 @@
+vindu=Minesweeper
+vansklighetValg=Easy;Medium;Difficult
+modellValg=Random;Spiral;Grid;Hex

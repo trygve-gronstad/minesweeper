@@ -1,18 +1,19 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-import java.awt.geom.Area;
 import java.util.List;
 import java.util.ArrayList;
 
 class View {
 
-    private final JFrame vindu = new JFrame("Minesweeper");
+    private final JFrame vindu = new JFrame();
 
     private final JPanel rutePanel = new JPanel();
 
-    private final JComboBox<String> vansklighetValg = new JComboBox<>(new String[] {"Easy", "Medium", "Diffucalt"});
-    private final JComboBox<String> modellValg = new JComboBox<>(new String[] {"Random", "Spiral", "Grid", "Hex"});
+    private final JComboBox<String> vansklighetValg = new JComboBox<>();
+    private final JComboBox<String> modellValg = new JComboBox<>();
+
+    private final JPopupMenu popUp = new JPopupMenu();
 
     private final JLabel antFlagg = new JLabel();
     private final JLabel tid = new JLabel();
@@ -22,6 +23,7 @@ class View {
     private final List<KantKnapp> alleKnapper = new ArrayList<>();
     private Dimension overflateStørrelse = new Dimension(1000, 800);
     private int flagg = 0;
+    private final VenteTråd sekRunneble = new VenteTråd(1000);
     private Thread sekKlokke;
     private boolean kanSpille, kanFlagge;
     private final static Color GRÅ = new Color(170, 170, 170);
@@ -29,10 +31,10 @@ class View {
     public View(Controller c) {
         CON = c;
 
-        init();
+        init(1, 0);
     }
 
-    private void init() {
+    private void init(int valg1, int valg2) {
 
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -41,6 +43,7 @@ class View {
             System.exit(1);
         }
 
+        setTekst();
         vindu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -52,13 +55,22 @@ class View {
         JPanel innstillingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         innstillingPanel.setBackground(Color.WHITE);
         innstillingPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 35));
-        vansklighetValg.setSelectedIndex(1);
+        vansklighetValg.setSelectedIndex(valg1);
         ActionListener resetFunksjonalitet = new ResetAction();
         vansklighetValg.addActionListener(resetFunksjonalitet);
-        modellValg.setSelectedIndex(0);
+        modellValg.setSelectedIndex(valg2);
         modellValg.addActionListener(resetFunksjonalitet);
         innstillingPanel.add(vansklighetValg);
         innstillingPanel.add(modellValg);
+        JButton info = new JButton("ⓘ");
+        popUp.setPreferredSize(new Dimension(100, 100));
+        info.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                popUp.show(info, 0, 50);
+            }
+        });
+        innstillingPanel.add(info);
         toppPanel.add(innstillingPanel);
 
         JPanel forklaringPanel = new JPanel(new GridBagLayout());
@@ -95,6 +107,19 @@ class View {
         vindu.setVisible(true);
     }
 
+    private void setTekst() {
+        vindu.setTitle(CON.hentTekst("vindu")[0]);
+        setTekst(vansklighetValg, "vansklighetValg");
+        setTekst(modellValg, "modellValg");
+    }
+
+    private void setTekst(JComboBox<String> box, String varNavn) {
+        box.removeAllItems();
+        for (String s: CON.hentTekst(varNavn)) {
+            box.addItem(s);
+        }
+    }
+
     public void leggTilKnapp(Polygon polygon, int tekstX, int tekstY) {
         KantKnapp k = new KantKnapp(polygon, tekstX, tekstY);
         alleKnapper.add(k);
@@ -117,7 +142,8 @@ class View {
     public void restart(int antBomber) {
         antFlagg.setText(String.format(" %d 🚩", antBomber));
         tid.setText("tid: 0 ");
-        sekKlokke = new Thread(new VenteTråd(1000));
+        sekRunneble.restart();
+        sekKlokke = new Thread(sekRunneble);
         flagg = antBomber;
         restart.settVanlig();
         kanFlagge = false;
@@ -131,7 +157,7 @@ class View {
         }
         else {
             restart.settTap();
-            //CON.markerFeil();
+            CON.sjekkFeil();
         }
         sekKlokke.interrupt();
     }
@@ -164,12 +190,29 @@ class View {
         return modellValg.getSelectedIndex();
     }
 
+    public void feilFlagget(int i) {
+        alleKnapper.get(i).feilFlagget();
+    }
+
+    public void ikkeFlagget(int i) {
+        alleKnapper.get(i).ikkeFlagget();
+    }
+
+    public int hentTid() {
+        return sekRunneble.t;
+    }
+
+    public void setAvstand(int i) {
+        KantKnapp.avstand = (int) Math.round(i / 10.0);
+    }
+
     private class KantKnapp extends JButton {
 
         private static int ANTALL = 0;
         private static final Font FONT = new Font("Display", Font.BOLD, 15);
         private static final Color[] FARGER = new Color[] {Color.BLUE, new Color(0, 126, 0), Color.RED, new Color(178, 0, 255), new Color(255, 216, 0), new Color(3, 127, 127), new Color(137, 82, 0), Color.WHITE};
-       
+        private static int avstand;
+
         private final Polygon polygon;
         //private final Area omeråde;
         private final int indeks, tekstX, tekstY;
@@ -305,7 +348,7 @@ class View {
                 Shape omeråde = g2.getClip();
                 g2.clip(polygon);
 
-                g2.setStroke(new BasicStroke(5));
+                g2.setStroke(new BasicStroke(Math.max(3, avstand)));
                 g2.setColor(getForeground());
                 g2.drawPolygon(polygon);
 
@@ -347,8 +390,16 @@ class View {
 
         public void vis() {
             sjult = false;
-            setBackground(GRÅ);
             setText(hentTekst());
+
+            if (CON.erMine(indeks)) {
+                marker(true);
+                setBackground(Color.RED);
+            }
+            else {
+                setBackground(GRÅ);
+            }
+
             repaint();
         }
 
@@ -375,18 +426,32 @@ class View {
                 super.setBackground(bg);
             }
         }
+
+        public void feilFlagget() {
+            setText("X");
+            setForeground(Color.RED);
+        }
+
+        public void ikkeFlagget() {
+            vis();
+            setBackground(GRÅ);
+        }
     }
 
     private class VenteTråd implements Runnable {
         private final int dt;
+        private int t = 0;
 
         public VenteTråd(int dt) {
             this.dt = dt;
         }
 
+        public void restart() {
+            t = 0;
+        }
+
         @Override
         public void run() {
-            int t = 0;
             try {
                 while (true) {
                     Thread.sleep(dt);

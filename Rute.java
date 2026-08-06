@@ -160,4 +160,14 @@ class Rute {
         return sjekket;
     }
 
+    @Override
+    public String toString() {
+        int i = 0;
+        if (bombe) i |= 4;
+        if (flagget) i |= 2;
+        if (sjekket) i |= 1;
+
+        return String.format("{%d,%s}", i, FIGUR.hentSentrum());
+    }
+
 }

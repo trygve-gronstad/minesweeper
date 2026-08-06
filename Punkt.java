@@ -26,7 +26,7 @@ class Punkt implements Comparable<Punkt> {
     public String toString() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         DecimalFormat df = new DecimalFormat("#.########", symbols);
-        return String.format("(%s, %s)", df.format(x), df.format(y));
+        return String.format("(%s,%s)", df.format(x), df.format(y));
     }
 
     @Override
@@ -180,6 +180,10 @@ class Punkt implements Comparable<Punkt> {
         }
 
         return kode;
+    }
+
+    public Punkt multipliser(int i) {
+        return new Punkt(x*i, y*i);
     }
 
 }

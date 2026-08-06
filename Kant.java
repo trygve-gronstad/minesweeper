@@ -205,6 +205,17 @@ class Linje extends Kant {
         }
     }
 
+    public static Punkt skjæringsPunkt(Punkt A, Punkt B, int kant, boolean xAkse) {
+        if (xAkse) {
+            double t = (kant - A.x) / (B.x - A.x);
+            double y = A.y + t * (B.y - A.y);
+            return new Punkt(kant, y);
+        }
+        double t = (kant - A.y) / (B.y - A.y);
+        double x = A.x + t * (B.x - A.x);
+        return new Punkt(x, kant);
+    }
+
 
 }
 
@@ -256,20 +267,42 @@ class MangeKant extends Kant {
     }
 
     public MangeKant clip(int x0, int y0, int x1, int y1) {
-        Set<Punkt> punkter = new HashSet<>();
-        Linje[] linjer = kanter();
 
-        for (Linje l: linjer) {
-            if (l.innenfor(x0, y0, x1, y1)) {
-                punkter.add(l.P[0]);
-                punkter.add(l.P[1]);
-            }
-        }
+        List<Punkt> punkter = clip(Arrays.asList(P), x0, true, true);
+        punkter = clip(punkter, x1, false, true);
+        punkter = clip(punkter, y0, true, false);
+        punkter = clip(punkter, y1, false, false);
 
         Punkt[] p = new Punkt[punkter.size()];
         punkter.toArray(p);
-        sorter(S, p);
         return new MangeKant(S, p);
+    }
+
+    private List<Punkt> clip(List<Punkt> punkter, int kant, boolean større, boolean xAkse) {
+        List<Punkt> nyePunkter = new ArrayList<>();
+
+        for (int i = 0; i < punkter.size(); i++) {
+            int j = (i + 1) % punkter.size();
+
+            Punkt A = punkter.get(i);
+            Punkt B = punkter.get(j);
+
+            double varA = xAkse ? punkter.get(i).x : punkter.get(i).y;
+            double varB = xAkse ? punkter.get(j).x : punkter.get(j).y;
+
+            boolean aInni = større ? (varA >= kant) : (varA <= kant);
+            boolean bInni = større ? (varB >= kant) : (varB <= kant);
+
+            if (bInni) {
+                if (!aInni) {
+                    nyePunkter.add(Linje.skjæringsPunkt(A, B, kant, xAkse));
+                }
+                nyePunkter.add(B);
+            } else if (aInni) {
+                nyePunkter.add(Linje.skjæringsPunkt(A, B, kant, xAkse));
+            }
+        }
+        return nyePunkter;
     }
 
 

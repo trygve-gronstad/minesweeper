@@ -123,8 +123,8 @@ class Trekant extends MangeKant {
         return erIKant(l.P[0]) && erIKant(l.P[1]);
     }
 
-    public Punkt hentSentrum(double minX, double minY, double maksX, double maksY) {
-        return new Punkt(Math.min(maksX, Math.max(S.x, minX)), Math.min(maksY, Math.max(S.y, minY)));
+    public Punkt hentSirkelSentrum() {
+        return S;
     }
 
 }
@@ -164,47 +164,6 @@ class Linje extends Kant {
         throw new IllegalArgumentException("Linjen tilhører ikke denne trekanten");
     }
 
-    
-    public boolean innenfor(int x0, int y0, int x1, int y1) {
-        //https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
-        int p0 = P[0].innenfor(x0, y0, x1, y1);
-        int p1 = P[1].innenfor(x0, y0, x1, y1);
-
-        while (true) {
-            if ((p0 | p1) == 0) {
-                return true;
-            }
-            if ((p0 & p1) != 0) {
-                return false;
-            }
-
-            double x = 0, y = 0;
-            int kode = (p0 != 0) ? p0 : p1;
-            
-            if ((kode & Punkt.TOP) != 0) {
-                x = P[0].x + (P[1].x - P[0].x) * (y1 - P[0].y) / (P[1].y - P[0].y);
-                y = y1;
-            } else if ((kode & Punkt.NEDE) != 0) { // point is below the clip window
-                x = P[0].x + (P[1].x - P[0].x) * (y0 - P[0].y) / (P[1].y - P[0].y);
-                y = y0;
-            } else if ((kode & Punkt.HØYRE) != 0) {  // point is to the right of clip window
-                y = P[0].y + (P[1].y - P[0].y) * (x1 - P[0].x) / (P[1].x - P[0].x);
-                x = x1;
-            } else if ((kode & Punkt.VENSTERE) != 0) {   // point is to the left of clip window
-                y = P[0].y + (P[1].y - P[0].y) * (x0 - P[0].x) / (P[1].x - P[0].x);
-                x = x0;
-            }
-
-            if (kode == p0) {
-                P[0] = new Punkt(x, y);
-                p0 = P[0].innenfor(x0, y0, x1, y1);
-            } else {
-                P[1] = new Punkt(x, y);
-                p1 = P[1].innenfor(x0, y0, x1, y1);
-            }
-        }
-    }
-
     public static Punkt skjæringsPunkt(Punkt A, Punkt B, int kant, boolean xAkse) {
         if (xAkse) {
             double t = (kant - A.x) / (B.x - A.x);
@@ -237,7 +196,12 @@ class MangeKant extends Kant {
 
         int i = 0;
         for (Trekant t: trekanter) {
-            punkter[i++] = t.hentSentrum(); //kan kanskje sjekke for om punktene blir null her, men det løser ikke alle problemene fortsatt...
+            if (t.S != null) {
+                punkter[i++] = t.S;
+            }
+            else {
+                punkter = Arrays.copyOf(punkter, punkter.length - 1);
+            }
         }
         sorter(p, punkter);
 
@@ -253,15 +217,10 @@ class MangeKant extends Kant {
     }
 
     public Punkt hentSentrum() {
-        return S;
-    }
-
-    public Punkt hentSentrum(int x0, int y0, int x1, int y1) {
-        double x = 0;
-        double y = 0;
+        double x = 0, y = 0;
         for (Punkt p: P) {
-            x += Math.max(x0, Math.min(p.x, x1));
-            y += Math.max(y0, Math.min(p.y, y1));
+            x += p.x;
+            y += p.y;
         }
         return new Punkt(x/size(), y/size());
     }

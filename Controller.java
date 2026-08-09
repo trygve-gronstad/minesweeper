@@ -1,21 +1,39 @@
 import java.util.*;
+
+import javax.imageio.ImageIO;
+
 import java.awt.Polygon;
+import java.awt.image.BufferedImage;
+import java.awt.Font;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.File;
+import java.awt.GraphicsEnvironment;
 
 public class Controller {
+
+    private static final Random RAND = new Random();
+
+    public static final Font RUTE_FONT = lastInnFont("assets/ruteFont.ttf");
+    public static final Font ANTALL_FONT = lastInnFont("assets/7segmentDisplay.ttf");
+    public static final BufferedImage FLAGG = lesBilde("assets/flagg.png");
+    public static final BufferedImage BOMBE = lesBilde("assets/bombe.png");
+    public static final BufferedImage FEIL_FLAGG = lesBilde("assets/feilFlagg.png");
+    public static final BufferedImage KUL = lesBilde("assets/kul.png");
+    public static final BufferedImage VANLIG = lesBilde("assets/vanlig.png");
+    public static final BufferedImage OVERRASKET = lesBilde("assets/overrasket.png");
+    public static final BufferedImage DØ = lesBilde("assets/dø.png");
     
     private Map<String, String[]> tekst = lesFil("assets/english.txt");
     private final List<Rute> alleRuter = new ArrayList<>();
     private int antMiner, antallRuter, antallSjekket;
     private final View DISPLAY = new View(this);
     private boolean sattUtBomber = false;
-    private static final Random RAND = new Random();
     private final Collection<Rute> ikkeSjekketNaboer = new HashSet<>();
 
     public Controller() {
         lagRuter(DISPLAY.hentVansklighetNr(), DISPLAY.hentModellNr());
-        lagGuiRuter();
     }
 
     public void lagRuter(int vansklighetNr, int modellNr) {
@@ -36,32 +54,31 @@ public class Controller {
         }
         PunktDistribusjon m = finnModell(vansklighetNr, modellNr);
         lagRuter(m);
-        DISPLAY.setAvstand(m.estimertAvstand());
-        lagGuiRuter();
+        lagGuiRuter(m.estimertAvstand());
     }
 
     private PunktDistribusjon finnModell(int vansklighetNr, int modellNr) {
         switch (vansklighetNr) {
             case 0:
-                return finnModell(modellNr, 25, 50);
+                return finnModellAntall(modellNr, 25);
             case 1:
-                return finnModell(modellNr, 100, 50);
+                return finnModellAntall(modellNr, 100);
             case 2: 
-                return finnModell(modellNr, 250, 50);
+                return finnModellAntall(modellNr, 250);
         }
         throw new IllegalArgumentException("Ikke gyldig modell, eller vansklighet");
     }
 
-    private PunktDistribusjon finnModell(int modellNr, int... args) {
+    private PunktDistribusjon finnModellAntall(int modellNr, int antall) {
         switch (modellNr) {
             case 0:
-                return new RandomModell(args[0], hentLengde(), hentHøyde(), args[1]);
+                return new RandomModell(antall, hentLengde(), hentHøyde());
             case 1:
-                return new SpiralModell(args[0], hentLengde(), hentHøyde(), args[1]);
+                return new SpiralModell(antall, hentLengde(), hentHøyde());
             case 2: 
-                return new GridModell(args[0], hentLengde(), hentHøyde(), args[1]);
+                return new GridModell(antall, hentLengde(), hentHøyde());
             case 3:
-                return new HexModell(args[0], hentLengde(), hentHøyde(), args[1]);
+                return new HexModell(antall, hentLengde(), hentHøyde());
         }
         throw new IllegalArgumentException("Ikke gyldig modell");
     } 
@@ -82,7 +99,8 @@ public class Controller {
         return new Polygon(r.hentPolygonX(), r.hentPolygonY(), r.hentPolygonS());
     }
 
-    private void lagGuiRuter() {
+    private void lagGuiRuter(int avstand) {
+        DISPLAY.setAvstand(avstand);
         for (int i = 0; i < alleRuter.size(); i++) {
             Rute r = alleRuter.get(i);
             DISPLAY.leggTilKnapp(hentPolygon(r), r.hentSenterX(hentLengde()), r.hentSenterY(hentHøyde()));
@@ -235,6 +253,27 @@ public class Controller {
 
     public String[] hentTekst(String s) {
         return tekst.get(s);
+    }
+
+    private static Font lastInnFont(String filSti) {
+        try {
+            InputStream is = Controller.class.getResourceAsStream(filSti);
+            Font font = Font.createFont(Font.TRUETYPE_FONT, is);
+            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+            return font.deriveFont(Font.PLAIN, 10f);
+        }
+        catch (Exception e) {
+            return new Font("SansSerif", Font.PLAIN, 14);
+        }
+    }
+
+    private static BufferedImage lesBilde(String relativSti) {
+        try {
+            return ImageIO.read(new File(relativSti));
+        }
+        catch (IOException e) {
+            return null;
+        }
     }
     
 }

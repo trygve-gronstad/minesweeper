@@ -56,7 +56,7 @@ class Rutenett {
             while (it.hasNext()) {
                 Trekant t = it.next();
 
-                if (t.hentSentrum() == null) {
+                if (t.hentSirkelSentrum() == null) {
                     continue;
                 }
 

@@ -118,7 +118,7 @@ class View {
 
         vindu.pack();
         vindu.setLocationRelativeTo(null);
-        vindu.setVisible(true);
+        //vindu.setVisible(true);
     }
 
     private void setTekst() {
@@ -218,6 +218,7 @@ class View {
 
     public void setBakgrunnsfarge() {
         rutePanel.setBackground(Color.GRAY);
+        vindu.setVisible(true);
     }
 
     public void setVisible(boolean b) {

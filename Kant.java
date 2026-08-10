@@ -119,14 +119,6 @@ class Trekant extends MangeKant {
         return new Linje[] {new Linje(P[0], P[1]), new Linje(P[0], P[2]), new Linje(P[1], P[2])};
     }
 
-    public boolean erITrekant(Linje l) {
-        return erIKant(l.P[0]) && erIKant(l.P[1]);
-    }
-
-    public Punkt hentSirkelSentrum() {
-        return S;
-    }
-
 }
 
 class Linje extends Kant {
@@ -149,19 +141,6 @@ class Linje extends Kant {
     @Override
     public int hashCode() {
         return P[0].hashCode() * 13 + P[1].hashCode();
-    }
-
-    public double kvadratLengde() {
-        return P[1].subtraksjon(P[0]).square();
-    }
-
-    public Punkt fritsåtendePunkt(Trekant t) {
-        for (Punkt trekantPunkt : t.hentPunkter()) {
-            if (!trekantPunkt.equals(P[0]) && !trekantPunkt.equals(P[1])) {
-                return trekantPunkt;
-            }
-        }
-        throw new IllegalArgumentException("Linjen tilhører ikke denne trekanten");
     }
 
     public static Punkt skjæringsPunkt(Punkt A, Punkt B, int kant, boolean xAkse) {
@@ -196,8 +175,8 @@ class MangeKant extends Kant {
 
         int i = 0;
         for (Trekant t: trekanter) {
-            if (t.S != null) {
-                punkter[i++] = t.S;
+            if (t.hentSirkelSentrum() != null) {
+                punkter[i++] = t.hentSirkelSentrum();
             }
             else {
                 punkter = Arrays.copyOf(punkter, punkter.length - 1);
@@ -223,6 +202,10 @@ class MangeKant extends Kant {
             y += p.y;
         }
         return new Punkt(x/size(), y/size());
+    }
+
+    public Punkt hentSirkelSentrum() {
+        return S;
     }
 
     public MangeKant clip(int x0, int y0, int x1, int y1) {

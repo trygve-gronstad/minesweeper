@@ -24,21 +24,25 @@ public class Controller {
     public static final BufferedImage VANLIG = lesBilde("assets/vanlig.png");
     public static final BufferedImage OVERRASKET = lesBilde("assets/overrasket.png");
     public static final BufferedImage DØ = lesBilde("assets/dø.png");
+
+    private final List<Rute> alleRuter = new ArrayList<>();
+    private final Collection<Rute> ikkeSjekketNaboer = new HashSet<>();
+    private final View display;
     
     private Map<String, String[]> tekst = lesFil("assets/english.txt");
-    private final List<Rute> alleRuter = new ArrayList<>();
     private int antMiner, antallRuter, antallSjekket;
-    private final View DISPLAY = new View(this);
     private boolean sattUtBomber = false;
-    private final Collection<Rute> ikkeSjekketNaboer = new HashSet<>();
 
     public Controller() {
-        lagRuter(DISPLAY.hentVansklighetNr(), DISPLAY.hentModellNr());
+        display = new View(this);
+        lagRuter();
+        display.setBakgrunnsfarge();
     }
 
-    public void lagRuter(int vansklighetNr, int modellNr) {
+    public void lagRuter() {
         sattUtBomber = false;
         antallRuter = antallSjekket = 0;
+        int vansklighetNr = display.hentVansklighetNr();
         switch (vansklighetNr) {
             case 0:
                 antMiner = 5;
@@ -52,7 +56,7 @@ public class Controller {
             default:
                 break;
         }
-        PunktDistribusjon m = finnModell(vansklighetNr, modellNr);
+        PunktDistribusjon m = finnModell(vansklighetNr, display.hentModellNr());
         lagRuter(m);
         lagGuiRuter(m.estimertAvstand());
     }
@@ -100,13 +104,15 @@ public class Controller {
     }
 
     private void lagGuiRuter(int avstand) {
-        DISPLAY.setAvstand(avstand);
+        display.setAvstand(avstand);
+        display.setVisible(false);
         for (int i = 0; i < alleRuter.size(); i++) {
             Rute r = alleRuter.get(i);
-            DISPLAY.leggTilKnapp(hentPolygon(r), r.hentSenterX(hentLengde()), r.hentSenterY(hentHøyde()));
+            display.leggTilKnapp(hentPolygon(r), r.hentSenterX(hentLengde()), r.hentSenterY(hentHøyde()));
         }
-        DISPLAY.lagtTilKnapper();
-        DISPLAY.restart(antMiner);
+        display.setVisible(true);
+        display.lagtTilKnapper();
+        display.restart(antMiner);
     }
 
     public String hentTegn(int nr) {
@@ -134,7 +140,7 @@ public class Controller {
             }
 
             Rute.tellNaboer(alleRuter);
-            DISPLAY.start();
+            display.start();
 
         }
 
@@ -142,14 +148,16 @@ public class Controller {
         boolean tapt = alleRuter.get(nr).utvidetSjekk(sjekket);
         antallSjekket += sjekket.size();
         if (tapt) {
-            DISPLAY.slutt(false);
+            display.slutt(false);
         }
         else if (vunnet()) {
-            DISPLAY.slutt(true);
+            display.slutt(true);
         }
+        display.setVisible(false);
         for (Rute r: sjekket) {
-            DISPLAY.vis(r.hentIndeks());
+            display.vis(r.hentIndeks());
         }
+        display.setVisible(true);
     }
 
     public boolean erMine(int nr) {
@@ -176,9 +184,11 @@ public class Controller {
     }
 
     private void marker(boolean x) {
+        display.setVisible(false);
         for (Rute nabo: ikkeSjekketNaboer) {
-            DISPLAY.markerKnapp(nabo.hentIndeks(), x);
+            display.markerKnapp(nabo.hentIndeks(), x);
         }
+        display.setVisible(true);
     }
 
     public boolean erSjekket(int nr) {
@@ -190,11 +200,11 @@ public class Controller {
     }
 
     public int hentLengde() {
-        return DISPLAY.hentLengde();
+        return display.hentLengde();
     }
 
     public int hentHøyde() {
-        return DISPLAY.hentHøyde();
+        return display.hentHøyde();
     }
 
     public boolean vunnet() {
@@ -202,21 +212,23 @@ public class Controller {
     }
 
     public void sjekkFeil() {
+        display.setVisible(false);
         for (Rute r: alleRuter) {
             if (r.harBombe() && !r.harFlagg()) {
-                DISPLAY.ikkeFlagget(r.hentIndeks());
+                display.ikkeFlagget(r.hentIndeks());
             }
             else if (!r.harBombe() && r.harFlagg()) {
-                DISPLAY.feilFlagget(r.hentIndeks());
+                display.feilFlagget(r.hentIndeks());
             }
         }
+        display.setVisible(true);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        for (int i: new int[] {hentLengde(), hentHøyde(), DISPLAY.hentVansklighetNr(), DISPLAY.hentModellNr(), DISPLAY.hentTid()}) {
+        for (int i: new int[] {hentLengde(), hentHøyde(), display.hentVansklighetNr(), display.hentModellNr(), display.hentTid()}) {
             sb.append(i);
             sb.append(",");
         }
@@ -260,7 +272,7 @@ public class Controller {
             InputStream is = Controller.class.getResourceAsStream(filSti);
             Font font = Font.createFont(Font.TRUETYPE_FONT, is);
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
-            return font.deriveFont(Font.PLAIN, 10f);
+            return font.deriveFont(Font.PLAIN, 24f);
         }
         catch (Exception e) {
             return new Font("SansSerif", Font.PLAIN, 14);

@@ -3,13 +3,13 @@ import java.util.*;
 class Rute {
 
     private final Collection<Rute> naboer = new HashSet<>();
-    private final MangeKant FIGUR;
+    private final MangeKant figur;
+    private final int indeks;
     private boolean bombe, flagget, sjekket;
     private int tall = -1;
-    private final int indeks;
     
     public Rute(MangeKant poly, int indeks) {
-        FIGUR = poly;
+        figur = poly;
         bombe = false;
         flagget = sjekket = false;
         this.indeks = indeks;
@@ -47,7 +47,7 @@ class Rute {
     }
 
     private static void leggTil(Rute r, Map<Punkt, Collection<Rute>> map) {
-        for (Punkt p: r.FIGUR.hentPunkter()) {
+        for (Punkt p: r.figur.hentPunkter()) {
             map.computeIfAbsent(p, k -> new HashSet<>()).add(r);
         }
     }
@@ -86,15 +86,15 @@ class Rute {
     }
 
     public int[] hentPolygonX() {
-        return FIGUR.xArr();
+        return figur.xArr();
     }
 
     public int[] hentPolygonY() {
-        return FIGUR.yArr();
+        return figur.yArr();
     }
 
     public int hentPolygonS() {
-        return FIGUR.size();
+        return figur.size();
     }
 
     public Collection<Rute> sjekk() {
@@ -104,11 +104,11 @@ class Rute {
     }
 
     public int hentSenterX(int lengde) {
-        return (int) FIGUR.hentSentrum().x;
+        return (int) figur.hentSentrum().x;
     }
 
     public int hentSenterY(int høyde) {
-        return (int) FIGUR.hentSentrum().y;
+        return (int) figur.hentSentrum().y;
     }
 
     public boolean utvidetSjekk(Collection<Rute> retur) {
@@ -167,7 +167,7 @@ class Rute {
         if (flagget) i |= 2;
         if (sjekket) i |= 1;
 
-        return String.format("{%d,%s}", i, FIGUR.hentSentrum());
+        return String.format("{%d,%s}", i, figur.hentSirkelSentrum());
     }
 
 }

@@ -7,12 +7,6 @@ class Punkt implements Comparable<Punkt> {
     public final double x;
     public final double y;
 
-    public static final int TOP = 8;
-    public static final int VENSTERE = 1;
-    public static final int HØYRE = 2;
-    public static final int NEDE = 4;
-    public static final int MIDTEN = 0;
-
     public Punkt(double x, double y) {
         this.x = x;
         this.y = y;
@@ -161,25 +155,6 @@ class Punkt implements Comparable<Punkt> {
         }
 
         return retur;
-    }
-
-    public int innenfor(int x0, int y0, int x1, int y1) {
-        int kode = MIDTEN;
-        if (x < x0) {
-            kode |= VENSTERE;
-        }
-        else if (x > x1) {
-            kode |= HØYRE;
-        }
-
-        if (y < y0) {
-            kode |= NEDE;
-        }
-        else if (y > y1) {
-            kode |= TOP;
-        }
-
-        return kode;
     }
 
     public Punkt multipliser(int i) {

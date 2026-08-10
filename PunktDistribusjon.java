@@ -55,70 +55,12 @@ class RandomModell extends PunktDistribusjon {
 
     @Override
     public int estimertAvstand() {
-        return estimertAvstand(bredde, høyde);
+        int a = hentAvstand() * 2;
+        return estimertAvstand(bredde - a, høyde - a);
     }
 
     protected int estimertAvstand(int x, int y) {
         return (int) (1 / (Math.sqrt(ant / ((double) (x * y)))));
-    }
-}
-
-class HexModell extends GridModell {
-
-    public HexModell(int caAntall, int bredde, int høyde) {
-        super(caAntall, bredde, høyde);
-    }
-
-    @Override
-    public Punkt[] finnPunkter() {
-        Punkt[] p = new Punkt[rad*kol];
-        int halveis = delta / 2;
-
-        for (double x = 0.5; x < kol; x++) {
-            for (double y = 0.375; y < rad; y++) {
-                Punkt punkt;
-                if ((int) x % 2 == 0) {
-                    punkt = new Punkt(delta * x, delta * y);
-                }
-                else {
-                    punkt = new Punkt(delta * x, delta * y + halveis);
-                }
-                p[(int) x * rad + (int) y] = punkt;
-            }
-        }
-        return p;
-    }
-}
-
-class GridModell extends PunktDistribusjon {
-
-    protected final int delta, rad, kol;
-
-    public GridModell(int caAntall, int bredde, int høyde) {
-        super(høyde, bredde);
-
-        double forhold = ((double) bredde)/(høyde);
-        double rot = Math.sqrt(caAntall / forhold);
-        rad = Math.max(1, (int) Math.round(rot));
-        kol = (int) Math.round((double) caAntall / this.rad);
-        delta = Math.min(bredde / kol, høyde / rad);
-    }
-
-    @Override
-    public Punkt[] finnPunkter() {
-        Punkt[] p = new Punkt[rad*kol];
-
-        for (int x = 0; x < kol; x++) {
-            for (int y = 0; y < rad; y++) {
-                p[x*rad + y] = new Punkt(delta * (x + 0.5), delta * (y + 0.5));
-            }
-        }
-        return p;
-    }
-
-    @Override
-    public int estimertAvstand() {
-        return delta;
     }
 }
 
@@ -159,4 +101,63 @@ class SpiralModell extends RandomModell {
         return estimertAvstand(min, min);
     }
 
+}
+
+class GridModell extends PunktDistribusjon {
+
+    protected final int delta, rad, kol;
+
+    public GridModell(int caAntall, int bredde, int høyde) {
+        super(høyde, bredde);
+
+        double forhold = ((double) bredde)/(høyde);
+        double rot = Math.sqrt(caAntall / forhold);
+        rad = Math.max(1, (int) Math.round(rot));
+        kol = (int) Math.round((double) caAntall / this.rad);
+        delta = Math.min(bredde / kol, høyde / rad);
+    }
+
+    @Override
+    public Punkt[] finnPunkter() {
+        Punkt[] p = new Punkt[rad*kol];
+
+        for (int x = 0; x < kol; x++) {
+            for (int y = 0; y < rad; y++) {
+                p[x*rad + y] = new Punkt(delta * (x + 0.5), delta * (y + 0.5));
+            }
+        }
+        return p;
+    }
+
+    @Override
+    public int estimertAvstand() {
+        return delta;
+    }
+}
+
+class HexModell extends GridModell {
+
+    public HexModell(int caAntall, int bredde, int høyde) {
+        super(caAntall, bredde, høyde);
+    }
+
+    @Override
+    public Punkt[] finnPunkter() {
+        Punkt[] p = new Punkt[rad*kol];
+        int halveis = delta / 2;
+
+        for (double x = 0.5; x < kol; x++) {
+            for (double y = 0.375; y < rad; y++) {
+                Punkt punkt;
+                if ((int) x % 2 == 0) {
+                    punkt = new Punkt(delta * x, delta * y);
+                }
+                else {
+                    punkt = new Punkt(delta * x, delta * y + halveis);
+                }
+                p[(int) x * rad + (int) y] = punkt;
+            }
+        }
+        return p;
+    }
 }

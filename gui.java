@@ -1,7 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
-
+import javax.swing.border.Border;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
@@ -11,28 +12,32 @@ import java.util.ArrayList;
 
 class View {
 
-    private final JFrame vindu = new JFrame();
+    private final static int KANT_AVSTAND = 10;
+    private final static int INFO_AVSTAND = 5;
+    private final static Dimension MIN_STØRRELSE = new Dimension(250, 250);
+    private final static Dimension OVERFLATE_STØRRELSE = finnOverflateDimensjon();
+    private final static Color GRÅ = new Color(170, 170, 170);
 
+    private final JFrame vindu = new JFrame();
     private final JPanel rutePanel = new JPanel();
 
     private final JComboBox<String> vansklighetValg = new JComboBox<>();
     private final JComboBox<String> modellValg = new JComboBox<>();
 
-    private final TallDisplay antFlagg = new TallDisplay(3);
+    private final TallDisplay antFlagg = new TallDisplay(2);
     private final TallDisplay tid = new TallDisplay(3);
     private final ResetKnapp restart = new ResetKnapp();
 
-    private final Controller CON;
+    private final Controller controller;
     private final List<KantKnapp> alleKnapper = new ArrayList<>();
-    private Dimension overflateStørrelse = new Dimension(1000, 800);
-    private int flagg = 0;
     private final VenteTråd sekRunneble = new VenteTråd(1000);
+
+    private int flagg = 0;
     private Thread sekKlokke;
     private boolean kanSpille, kanFlagge;
-    private final static Color GRÅ = new Color(170, 170, 170);
 
     public View(Controller c) {
-        CON = c;
+        controller = c;
 
         init(1, 0);
     }
@@ -50,14 +55,13 @@ class View {
         vindu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setPreferredSize(overflateStørrelse);
+        panel.setPreferredSize(OVERFLATE_STØRRELSE);
 
         JPanel toppPanel = new JPanel();
         toppPanel.setLayout(new BoxLayout(toppPanel, BoxLayout.PAGE_AXIS));
 
         JPanel innstillingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         innstillingPanel.setBackground(Color.WHITE);
-        innstillingPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 35));
         vansklighetValg.setSelectedIndex(valg1);
         ActionListener resetFunksjonalitet = new ResetAction();
         vansklighetValg.addActionListener(resetFunksjonalitet);
@@ -80,7 +84,6 @@ class View {
         gbc.gridy = 0;
         gbc.weighty = 1;
         forklaringPanel.setBackground(GRÅ);
-        forklaringPanel.setPreferredSize(new Dimension(overflateStørrelse.width, 50));
         gbc.gridx = 0;
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
@@ -93,17 +96,25 @@ class View {
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.EAST;
         forklaringPanel.add(tid, gbc);
-        forklaringPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        Border senket = new BevelBorder(BevelBorder.LOWERED);
+        Border b = BorderFactory.createCompoundBorder(senket, new EmptyBorder(INFO_AVSTAND - 1, INFO_AVSTAND, INFO_AVSTAND - 1, INFO_AVSTAND));
+        b = BorderFactory.createCompoundBorder(new EmptyBorder(KANT_AVSTAND, KANT_AVSTAND, KANT_AVSTAND, KANT_AVSTAND), b);
+        forklaringPanel.setBorder(b);
         toppPanel.add(forklaringPanel);
 
         panel.add(toppPanel, BorderLayout.NORTH);
 
         rutePanel.setLayout(null);
-        panel.add(rutePanel, BorderLayout.CENTER);
+        rutePanel.setBackground(GRÅ);
+        JPanel hovedPanel = new JPanel(new BorderLayout());
+        hovedPanel.add(rutePanel, BorderLayout.CENTER);
+        hovedPanel.setBackground(GRÅ);
+        hovedPanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(0, KANT_AVSTAND, KANT_AVSTAND, KANT_AVSTAND), senket));
+        panel.add(hovedPanel, BorderLayout.CENTER);
 
         vindu.add(panel);
-        vindu.setPreferredSize(overflateStørrelse);
-        vindu.setIconImage(CON.BOMBE);
+        vindu.setMinimumSize(MIN_STØRRELSE);
+        vindu.setIconImage(Controller.BOMBE);
 
         vindu.pack();
         vindu.setLocationRelativeTo(null);
@@ -111,14 +122,14 @@ class View {
     }
 
     private void setTekst() {
-        vindu.setTitle(CON.hentTekst("vindu")[0]);
+        vindu.setTitle(controller.hentTekst("vindu")[0]);
         setTekst(vansklighetValg, "vansklighetValg");
         setTekst(modellValg, "modellValg");
     }
 
     private void setTekst(JComboBox<String> box, String varNavn) {
         box.removeAllItems();
-        for (String s: CON.hentTekst(varNavn)) {
+        for (String s: controller.hentTekst(varNavn)) {
             box.addItem(s);
         }
     }
@@ -132,9 +143,6 @@ class View {
     public void lagtTilKnapper() {
         rutePanel.revalidate();
         rutePanel.repaint();
-
-        vindu.revalidate();
-        vindu.repaint();
     }
 
     public void start() {
@@ -143,6 +151,7 @@ class View {
     }
 
     public void restart(int antBomber) {
+        antFlagg.setSiffer(String.valueOf(antBomber).length());
         antFlagg.setText(antBomber);
         tid.setText(0);
         sekRunneble.restart();
@@ -155,22 +164,18 @@ class View {
 
     public void slutt(boolean vunnet) {
         kanSpille = false;
+        sekKlokke.interrupt();
         if (vunnet) {
             restart.settVunnet();
         }
         else {
             restart.settTap();
-            CON.sjekkFeil();
+            controller.sjekkFeil();
         }
-        sekKlokke.interrupt();
     }
 
     public void vis(int i) {
         alleKnapper.get(i).vis();
-    }
-
-    public Dimension hentDimensjon() {
-        return overflateStørrelse;
     }
 
     public void markerKnapp(int indeks, boolean marker) {
@@ -205,9 +210,23 @@ class View {
         return sekRunneble.t;
     }
 
+    private static Dimension finnOverflateDimensjon() {
+        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) (Math.min(d.width, d.height) * 0.8);
+        return new Dimension(Math.max(x, MIN_STØRRELSE.width), Math.max(x, MIN_STØRRELSE.height));
+    }
+
+    public void setBakgrunnsfarge() {
+        rutePanel.setBackground(Color.GRAY);
+    }
+
+    public void setVisible(boolean b) {
+        rutePanel.setVisible(b);
+    }
+
     public void setAvstand(int i) {
-        KantKnapp.tykkPensel = new BasicStroke(Math.max(3, i/8));
-        KantKnapp.font = Controller.RUTE_FONT.deriveFont(Font.BOLD, Math.max(10, i/3));
+        KantKnapp.tykkPensel = new BasicStroke(Math.max(3, i/5f));
+        KantKnapp.font = Controller.RUTE_FONT.deriveFont(Font.BOLD, Math.max(10, i/3f));
         LineMetrics lm = KantKnapp.font.getLineMetrics("1", new FontRenderContext(null, true, true));
         KantKnapp.yOffset = Math.round((lm.getAscent() - lm.getDescent()) / 2f);
     }
@@ -235,7 +254,7 @@ class View {
             setFocusPainted(false);
             setBorderPainted(false);
             setBackground(Color.LIGHT_GRAY);
-            setForeground(Color.DARK_GRAY);
+            setForeground(Color.BLACK);
             setFont(font);
 
             Rectangle omkrets = polygon.getBounds();
@@ -266,7 +285,7 @@ class View {
                     else if (SwingUtilities.isRightMouseButton(e)) {
                         if (sjult) {
                             if (kanFlagge) {
-                                if (CON.byttFlagg(indeks)) {
+                                if (controller.byttFlagg(indeks)) {
                                     flagg--;
                                     setBilde(Controller.FLAGG);
                                 }
@@ -280,7 +299,7 @@ class View {
                             flagger = true;
                         }
                         else if (!flagger) {
-                            CON.markerNaboer(indeks);
+                            controller.markerNaboer(indeks);
                         }
                     }
                     forrige = finnKnappUnderPeker(e);
@@ -298,8 +317,8 @@ class View {
                         if (ny.sjult) ny.marker(true);
                     } 
                     else if (SwingUtilities.isRightMouseButton(e) && !flagger) {
-                        CON.fjernMarkering();
-                        CON.markerNaboer(ny.indeks);
+                        controller.fjernMarkering();
+                        controller.markerNaboer(ny.indeks);
                     }
                     forrige = ny;
                 }
@@ -311,10 +330,10 @@ class View {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         restart.settVanlig();
                         if (forrige.sjult) forrige.marker(false);
-                        CON.trykkKnapp(forrige.indeks);
+                        controller.trykkKnapp(forrige.indeks);
                     } 
                     else if (SwingUtilities.isRightMouseButton(e)) {
-                        CON.fjernMarkering();
+                        controller.fjernMarkering();
                     }
                     flagger = false;
                 }
@@ -357,7 +376,7 @@ class View {
                 g2.clip(polygon);
 
                 g2.setStroke(tykkPensel);
-                g2.setColor(getForeground());
+                g2.setColor(getForeground().darker());
                 g2.drawPolygon(polygon);
 
                 g2.setStroke(TYNN_PENSEL);
@@ -386,11 +405,11 @@ class View {
         }
 
         private String hentTekst() {
-            if (CON.erMine(indeks)) {
+            if (controller.erMine(indeks)) {
                 setBilde(Controller.BOMBE);
                 return null;
             }
-            int x = CON.hentForklaring(indeks);
+            int x = controller.hentForklaring(indeks);
 
             if (x > 0) {
                 int i = Math.min(7, x-1);
@@ -407,7 +426,7 @@ class View {
             sjult = false;
             setText(hentTekst());
 
-            if (CON.erMine(indeks)) {
+            if (controller.erMine(indeks)) {
                 marker(true);
                 setBackground(Color.RED);
             }
@@ -497,8 +516,7 @@ class View {
         private static final ImageIcon KUL = finnIcon(Controller.KUL);
 
         public ResetKnapp() {
-            setPreferredSize(new Dimension(46, 46));
-            setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+            setPreferredSize(new Dimension(40, 40));
             setBackground(GRÅ);
 
             addActionListener(new ActionListener() {
@@ -531,31 +549,54 @@ class View {
             alleKnapper.clear();
             KantKnapp.antall = 0;
             rutePanel.removeAll();
-            CON.lagRuter(vansklighetValg.getSelectedIndex(), modellValg.getSelectedIndex());
+            controller.lagRuter();
         }
 
         private static ImageIcon finnIcon(BufferedImage bilde) {
-            return new ImageIcon(bilde.getScaledInstance(40, 40, Image.SCALE_SMOOTH));
+            return new ImageIcon(bilde.getScaledInstance(36, 36, Image.SCALE_SMOOTH));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(getBackground());
+            boolean hevet = !getModel().isPressed();
+            g2.fill3DRect(0, 0, getWidth(), getHeight(), hevet);
+
+            Icon ikon = getIcon();
+            if (ikon != null) {
+                int x = (getWidth() - ikon.getIconWidth()) / 2;
+                int y = (getHeight() - ikon.getIconHeight()) / 2;
+                if (!hevet) {
+                    x++;
+                    y++;
+                }
+                ikon.paintIcon(this, g2, x, y);
+            }
+
+            g2.dispose();
         }
 
     }
 
     class TallDisplay extends JLabel {
         private static final Color AV_FARGE = new Color(96, 0, 0);
-        private static final Color PÅ_FARGE = Color.RED;
+        private static final Font FONT = Controller.ANTALL_FONT.deriveFont(Font.BOLD, 18);
+        private static final Border KANT = new EmptyBorder(2, 3, 2, 1);
 
-        private final int antSiffer;
-        private final int maks;
+        private int antSiffer;
+        private int maks;
 
         public TallDisplay(int antSiffer) {
-            this.antSiffer = antSiffer;
-            maks = Integer.parseInt("9".repeat(antSiffer));
+            setSiffer(antSiffer);
 
-            setFont(Controller.ANTALL_FONT.deriveFont(Font.BOLD, 5));
+            setFont(FONT);
             setForeground(AV_FARGE);
             setBackground(Color.BLACK);
             setOpaque(true);
-            setBorder(new EmptyBorder(2, 2, 2, 1));
+            setBorder(KANT);
         }
 
         @Override
@@ -573,7 +614,7 @@ class View {
 
             g2.drawString(" ".repeat(antSiffer), x, y);
             if (getText() != null) {
-                g2.setColor(PÅ_FARGE);
+                g2.setColor(Color.RED);
                 g2.drawString(getText(), x, y);
             }
 
@@ -583,6 +624,11 @@ class View {
         public void setText(int i) {
             setText(String.format("%0" + antSiffer + "d", Math.min(maks, Math.max(0, i))));
         }
+
+        public void setSiffer(int antSiffer) {
+            this.antSiffer = antSiffer;
+            maks = Integer.parseInt("9".repeat(antSiffer));
+        } 
 
     }
 

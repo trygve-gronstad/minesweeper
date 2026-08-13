@@ -27,7 +27,7 @@ abstract class PunktDistribusjon{
 class RandomModell extends PunktDistribusjon {
 
     protected static final Random RAND = new Random();
-    private static final double AVSTAND = 0.1;
+    private static final double AVSTAND = 0.03;
 
     protected final int ant;
 
@@ -56,10 +56,10 @@ class RandomModell extends PunktDistribusjon {
     @Override
     public int estimertAvstand() {
         int a = hentAvstand() * 2;
-        return estimertAvstand(bredde - a, høyde - a);
+        return estimertAvstand(ant, bredde - a, høyde - a);
     }
 
-    protected int estimertAvstand(int x, int y) {
+    protected static int estimertAvstand(int ant, int x, int y) {
         return (int) (1 / (Math.sqrt(ant / ((double) (x * y)))));
     }
 }
@@ -98,7 +98,7 @@ class SpiralModell extends RandomModell {
     @Override
     public int estimertAvstand() {
         int min = Math.min(bredde, høyde);
-        return estimertAvstand(min, min);
+        return estimertAvstand(ant, min, min);
     }
 
 }
@@ -113,7 +113,7 @@ class GridModell extends PunktDistribusjon {
         double forhold = ((double) bredde)/(høyde);
         double rot = Math.sqrt(caAntall / forhold);
         rad = Math.max(1, (int) Math.round(rot));
-        kol = (int) Math.round((double) caAntall / this.rad);
+        kol = Math.round((float) caAntall / this.rad);
         delta = Math.min(bredde / kol, høyde / rad);
     }
 
@@ -121,9 +121,14 @@ class GridModell extends PunktDistribusjon {
     public Punkt[] finnPunkter() {
         Punkt[] p = new Punkt[rad*kol];
 
+        int startX = (bredde - (kol * delta)) / 2;
+        int startY = (høyde - (rad * delta)) / 2;
+
         for (int x = 0; x < kol; x++) {
             for (int y = 0; y < rad; y++) {
-                p[x*rad + y] = new Punkt(delta * (x + 0.5), delta * (y + 0.5));
+                double px = startX + delta * (x + 0.5);
+                double py = startY + delta * (y + 0.5);
+                p[x*rad + y] = new Punkt(px, py);
             }
         }
         return p;
@@ -144,20 +149,55 @@ class HexModell extends GridModell {
     @Override
     public Punkt[] finnPunkter() {
         Punkt[] p = new Punkt[rad*kol];
+
         int halveis = delta / 2;
+        int startX = (bredde - (kol * delta)) / 2;
+        int startY = (høyde - (rad * delta)) / 2;
 
         for (double x = 0.5; x < kol; x++) {
-            for (double y = 0.375; y < rad; y++) {
-                Punkt punkt;
-                if ((int) x % 2 == 0) {
-                    punkt = new Punkt(delta * x, delta * y);
+            for (double y = 0.25; y < rad; y++) {
+                double px = startX + delta * x;
+                double py = startY + delta * y;
+                if ((int) x % 2 == 1) {
+                    py += halveis;
                 }
-                else {
-                    punkt = new Punkt(delta * x, delta * y + halveis);
-                }
-                p[(int) x * rad + (int) y] = punkt;
+                p[(int) x * rad + (int) y] = new Punkt(px, py);;
             }
         }
         return p;
     }
+}
+
+class MønsterModell extends GridModell {
+    private static final Punkt[] PUNKTER = {new Punkt(.1, .1), new Punkt(.9, .1), new Punkt(.1, .9), new Punkt(.9, .9), new Punkt(.5, .5)};
+
+    public MønsterModell(int caAntall, int bredde, int høyde) {
+        super(Math.round(caAntall / (float) PUNKTER.length), bredde, høyde);
+    }
+
+    public Punkt[] finnPunkter() {
+        Punkt[] punkter = new Punkt[rad*kol * PUNKTER.length];
+
+        int indeks = 0;
+        int startX = (bredde - (kol * delta)) / 2;
+        int startY = (høyde - (rad * delta)) / 2;
+
+        for (int x = 0; x < kol; x++) {
+            for (int y = 0; y < rad; y++) {
+                for (int i = 0; i < PUNKTER.length; i++) {
+                    Punkt p = PUNKTER[i];
+                    double px = (p.x + x) * delta + startX;
+                    double py = (p.y + y) * delta + startY;
+                    punkter[indeks++] = new Punkt(px, py);
+                }
+            }
+        }
+        return punkter;
+    }
+
+    @Override
+    public int estimertAvstand() {
+        return RandomModell.estimertAvstand(PUNKTER.length, delta, delta);
+    }
+
 }

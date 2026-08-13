@@ -118,7 +118,6 @@ class View {
 
         vindu.pack();
         vindu.setLocationRelativeTo(null);
-        //vindu.setVisible(true);
     }
 
     private void setTekst() {
@@ -216,8 +215,7 @@ class View {
         return new Dimension(Math.max(x, MIN_STØRRELSE.width), Math.max(x, MIN_STØRRELSE.height));
     }
 
-    public void setBakgrunnsfarge() {
-        rutePanel.setBackground(Color.GRAY);
+    public void startVindu() {
         vindu.setVisible(true);
     }
 
@@ -362,7 +360,7 @@ class View {
 
         @Override
         protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
+            // super.paintComponent(g);
 
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -567,15 +565,13 @@ class View {
             g2.fill3DRect(0, 0, getWidth(), getHeight(), hevet);
 
             Icon ikon = getIcon();
-            if (ikon != null) {
-                int x = (getWidth() - ikon.getIconWidth()) / 2;
-                int y = (getHeight() - ikon.getIconHeight()) / 2;
-                if (!hevet) {
-                    x++;
-                    y++;
-                }
-                ikon.paintIcon(this, g2, x, y);
+            int x = (getWidth() - ikon.getIconWidth()) / 2;
+            int y = (getHeight() - ikon.getIconHeight()) / 2;
+            if (!hevet) {
+                x++;
+                y++;
             }
+            ikon.paintIcon(this, g2, x, y);
 
             g2.dispose();
         }

@@ -196,12 +196,26 @@ class MangeKant extends Kant {
     }
 
     public Punkt hentSentrum() {
-        double x = 0, y = 0;
-        for (Punkt p: P) {
-            x += p.x;
-            y += p.y;
+        double areal = 0, cx = 0, cy = 0;
+        for (int i = 0; i < size(); i++) {
+            Punkt p1 = P[i];
+            Punkt p2 = P[(i+1) % size()];
+
+            double kryssPodukt = (p1.x * p2.y) - (p2.x * p1.y);
+            areal += kryssPodukt;
+            cx += (p1.x + p2.x) * kryssPodukt;
+            cy += (p1.y + p2.y) * kryssPodukt;
         }
-        return new Punkt(x/size(), y/size());
+        areal *= 0.5;
+
+        if (Math.abs(areal) < 1e-9) {
+            return P[0];
+        }
+
+        cx /= (6 * areal);
+        cy /= (6 * areal);
+
+        return new Punkt(cx, cy);
     }
 
     public Punkt hentSirkelSentrum() {

@@ -36,7 +36,7 @@ public class Controller {
     public Controller() {
         display = new View(this);
         lagRuter();
-        display.setBakgrunnsfarge();
+        display.startVindu();
     }
 
     public void lagRuter() {
@@ -45,10 +45,10 @@ public class Controller {
         int vansklighetNr = display.hentVansklighetNr();
         switch (vansklighetNr) {
             case 0:
-                antMiner = 5;
+                antMiner = 10;
                 break;
             case 1:
-                antMiner = 20;
+                antMiner = 40;
                 break;
             case 2: 
                 antMiner = 100;
@@ -64,11 +64,11 @@ public class Controller {
     private PunktDistribusjon finnModell(int vansklighetNr, int modellNr) {
         switch (vansklighetNr) {
             case 0:
-                return finnModellAntall(modellNr, 25);
+                return finnModellAntall(modellNr, 81);
             case 1:
-                return finnModellAntall(modellNr, 100);
+                return finnModellAntall(modellNr, 256);
             case 2: 
-                return finnModellAntall(modellNr, 250);
+                return finnModellAntall(modellNr, 480);
         }
         throw new IllegalArgumentException("Ikke gyldig modell, eller vansklighet");
     }

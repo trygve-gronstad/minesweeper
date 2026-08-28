@@ -2,7 +2,7 @@
 Prosjekt for å lage klassisk minesweeper, som windows versonen fra 1992, men med ikke-kvadratiske (og tilfeldige/forsjellige) ruter.
 
 ## Usage
-Det er ikke lagt ved en .jar fil, så for å kjøre applikasjonen må man kompilere og kjøre kodesnutten:
+Man kan enten kjøre .jar filen, eller kjøre koden under
 ```java
 new Controller();
 ```
